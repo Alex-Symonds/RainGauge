@@ -1,0 +1,8 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+db.sqlite3
+migrations/
+.env
+node_modules
+css
+Data.xlsx
