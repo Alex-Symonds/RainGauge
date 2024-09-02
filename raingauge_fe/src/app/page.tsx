@@ -1,40 +1,60 @@
-import { GraphControlsWrapper } from "@/components/GraphControlsWrapper";
-import dynamic from "next/dynamic";
-import { useMemo } from "react";
+'use client'
 
+import { GraphWithForm } from "@/components/graph/GraphWithForm";
+import { useRainGaugeData } from "@/util/useRainGaugeData";
+
+
+import { useTimeSeriesForm } from "@/util/useTimeSeriesForm";
+import { PageHeader } from "@/components/header/Header";
+import { MapPanel } from "@/components/map/MapPanel";
+import { StatsCards } from "@/components/statsCards/StatsCards";
+import { useDynamicTimeSeries } from "@/util/useDynamicTimeSeries";
+import { splitIntoCoords } from "@/util/splitIntoCoords";
 
 
 export default function Home() {
-
-  const Map = useMemo(() => dynamic(
-    () => import('@/components/Map'),
-    { 
-      loading: () => <p>A map is loading</p>,
-      ssr: false
-    }
-  ), [])
-
-  const lat = 52.48; //52.48049047465328;
-  const long = -1.89;// -1.8978672581749725;
-
+  const rainData = useRainGaugeData();
+  const graphData = useDynamicTimeSeries(rainData);
+  const formKit = useTimeSeriesForm({
+    updateDateRange: graphData.updateDateRange,
+    defaultStart: graphData.minDate,
+    defaultEnd: graphData.maxDate,
+  });
+  const graphCoords = splitIntoCoords(graphData.data);
 
   return (
       <main>
-        <div className="container mt-2"> 
-          <h1 className="d-flex flex-column">
-            <span className="text-primary">Rain Gauge Readings </span>
-            <small className=" fs-4 text-primary-emphasis">Birmingham, UK</small>
-          </h1>
-          
-          <div className="row mt-5">
-            <h2>Data</h2>
-            <GraphControlsWrapper />
+        <div className="container mt-4"> 
+          <PageHeader />
+
+          <div className="row mt-5"> 
+          { rainData.isLoading ?
+            <p>Loading...</p>
+            :
+            <GraphWithForm 
+              title = { graphData.getTimeRangeGraphTitle() }
+              xCoords = { graphCoords.xCoords }
+              yCoords = { graphCoords.yCoords }
+              formKit = { formKit }
+            />
+          }
           </div>
+
+          {graphData.data.length !== 0 ?
           <div className="row mt-5">
-            <h2>Location</h2>
-            <Map 
-              position = { [lat, long] }
-              zoom = { 13 }
+            <StatsCards 
+              data = { graphData.data }
+            />
+          </div>
+          : null
+          }
+
+          <div className="row mt-5">
+            <div className="col-12 col-lg-6 col-xl-7 col-xxl-8">
+              PLACEHOLDER
+            </div>
+            <MapPanel
+              data = { rainData }
             />
           </div>
         </div>

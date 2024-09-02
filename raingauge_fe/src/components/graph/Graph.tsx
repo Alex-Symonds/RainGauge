@@ -1,17 +1,18 @@
-// import Plot from 'react-plotly.js';
 'use client'
 import dynamic from "next/dynamic";
+import styles from './Graph.module.scss';
+
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false, })
+
 
 type T_GraphProps = {
     title : string,
-    xCoords : string[], 
+    xCoords : string[],
     yCoords : number[],
 }
-//style={{width:"500px",height:"500px;"}}
 
 export function Graph({ xCoords, yCoords, title } : T_GraphProps){
-    return <div id="tester" className="container">
+    return <div id="tester" className={`container rounded ${styles.graphContainer}`}>
         <Plot
             //@ts-ignore
             data={[
@@ -19,12 +20,16 @@ export function Graph({ xCoords, yCoords, title } : T_GraphProps){
                         x: xCoords ?? [],
                         y: yCoords ?? [],
                         type: 'scatter',
-                        mode: 'lines+markers',
-                        marker: { color: 'blue' },
+                        mode: 'lines',
+                        marker: { color: 'DodgerBlue' },
                     },
 
             ]}
-            layout={ {width: 500, height: 400, title } } 
+            // layout={ { width: 800, height: 400, title } }
+            layout={ { title } } 
+            useResizeHandler={true}
+            style={{width: "100%", height: "100%"}}
+            margin={{t: 0, b: 0, l: 0, r: 0}}
         />
     </div>
 }
