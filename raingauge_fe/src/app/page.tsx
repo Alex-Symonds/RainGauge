@@ -28,7 +28,9 @@ export default function Home() {
   return (
       <main>
         <div className="container mt-4"> 
-          <PageHeader />
+          <PageHeader 
+            locationName = { rainData.locationName }
+          />
 
           <div className="row mt-5"> 
           { rainData.isLoading ?
@@ -53,9 +55,6 @@ export default function Home() {
           }
 
           <div className="row mt-5">
-            <div className="col-12 col-lg-6 col-xl-7 col-xxl-8">
-              PLACEHOLDER
-            </div>
             <MapPanel
               data = { rainData }
             />

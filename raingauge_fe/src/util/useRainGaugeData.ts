@@ -25,6 +25,12 @@ export function useRainGaugeData(){
     // come from the server, so this seems a good place to keep it in the meantime :)
     const lat = 52.48049047465328;
     const long = -1.8978672581749725;
+    const locationName = "Birmingham, United Kingdom";
+
+    // While this might just have been the name of /the column/, I choose to believe it's the rain gauge's
+    // name: it's pronounced "Reggie"
+    const gaugeName = "RG_A";
+
 
     //@ts-expect-error (This line is straight from the SWR docs: I'm not interested in resolving TS's complaints about "implicit any")
     const fetcher = (...args) => fetch(...args).then(res => res.json());
@@ -40,5 +46,7 @@ export function useRainGaugeData(){
         isLoading,
         lat,
         long,
+        locationName,
+        gaugeName,
     }
 }
