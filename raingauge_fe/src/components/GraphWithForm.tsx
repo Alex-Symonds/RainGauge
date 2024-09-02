@@ -4,8 +4,16 @@
 
 import { Graph } from "./graph/Graph";
 import { GraphForm } from "./graphForm/GraphForm";
+import { T_UseInteractiveDataOutput } from "./graphForm/util/useInteractiveData";
 
-export function GraphWithForm({ title, xCoords, yCoords, formKit } : any){
+type T_GraphWithFormProps = {
+    title : string,
+    xCoords : string[],
+    yCoords : number[],
+    formKit : T_UseInteractiveDataOutput
+}
+
+export function GraphWithForm({ title, xCoords, yCoords, formKit } : T_GraphWithFormProps){
     return (
         <div className="row mt-3">
             <div className="col-12 col-md-5 col-lg-4 col-xl-3 order-2 order-md-1">

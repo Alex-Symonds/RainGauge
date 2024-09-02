@@ -6,6 +6,7 @@
 
 import { useState } from "react";
 import { convertStringToDate } from "@/util/dateStringHelpers";
+import { T_AdjustableDateRangeOutput } from "@/util/useAdjustableDateRange";
 
 export type T_SelectMonthOption = {
     display : string,
@@ -14,14 +15,24 @@ export type T_SelectMonthOption = {
     endTimestamp : string,
 }
 
-type T_UseOneMonthSelectForm = {
-    updateDateRange : any, 
-    monthOptionData : T_SelectMonthOption[]
-}
+export type T_UseOneMonthSelectFormOutput = 
+    Pick<T_AdjustableDateRangeOutput, 
+        "monthOptionData" 
+    > & {
+        monthSelect : string,
+        updateMonthSelect : (monthValue : string) => void,
+        error : string
+    };
+
+type T_UseOneMonthSelectForm = 
+    Pick<T_AdjustableDateRangeOutput, 
+        "monthOptionData" 
+        | "updateDateRange"
+    >;
 
 export function useOneMonthSelectForm({ updateDateRange, monthOptionData } : T_UseOneMonthSelectForm){
 
-    const [selectMonth, setSelectMonth] = useState<string>("");
+    const [monthSelect, setSelectMonth] = useState<string>("");
     const [monthSelectError, setMonthSelectError] = useState<string | null>(null);
 
     function updateMonthSelect(monthValue : string){
@@ -40,7 +51,7 @@ export function useOneMonthSelectForm({ updateDateRange, monthOptionData } : T_U
     }
 
     return {
-        selectMonth,
+        monthSelect,
         updateMonthSelect,
         monthOptionData,
         error: monthSelectError,

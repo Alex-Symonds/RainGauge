@@ -3,6 +3,8 @@
 */
 
 import { formatDate } from "@/util/dateStringHelpers";
+import { T_RainGaugeReading } from "@/util/useRainGaugeData";
+import { T_StatsCardProps } from "./StatsCard";
 
 type T_StatsAccumulator = {
     total: number,
@@ -10,7 +12,9 @@ type T_StatsAccumulator = {
     max: number,
 }
 
-export function createStatsData(filteredData : any[]) : null | any[]{
+export type T_StatsDataOutput = null | T_StatsCardProps[];
+
+export function createStatsData(filteredData : T_RainGaugeReading[]) : T_StatsDataOutput{
 
     const READINGS_PER_DAY = 4 * 24;
 
@@ -18,7 +22,7 @@ export function createStatsData(filteredData : any[]) : null | any[]{
         return null;
     }
 
-    const stats = filteredData.reduce((acc : T_StatsAccumulator, curr : any) => {
+    const stats = filteredData.reduce((acc : T_StatsAccumulator, curr : T_RainGaugeReading) => {
         return {
             total: acc.total + parseFloat(curr.reading),
             max: Math.max(acc.max, parseFloat(curr.reading)),
@@ -33,20 +37,22 @@ export function createStatsData(filteredData : any[]) : null | any[]{
     }
 
     const numAtMax = filteredData.filter(record => parseFloat(record.reading) === stats.max).length;
+    const maxDate = filteredData.find(record => parseFloat(record.reading) === stats.max);
     const maxObj = {
         title: "High",
         main: formatWithMM(stats.max),
         subtitle: numAtMax === 1
-            ? formatDate(filteredData.find(record => parseFloat(record.reading) === stats.max)?.timestamp)
+            ? maxDate === undefined ? "" : formatDate(maxDate.timestamp)
             : createMinMaxSubtitle(numAtMax)
     }
 
     const numAtMin = filteredData.filter(record => parseFloat(record.reading) === stats.min).length;
+    const minDate = filteredData.find(record => parseFloat(record.reading) === stats.min);
     const minObj = {
         title: "Low",
         main: formatWithMM(stats.min),
         subtitle: numAtMin === 1
-            ? formatDate(filteredData.find(record => record.reading === stats.min)?.timestamp)
+            ? minDate === undefined ? "" : formatDate(minDate.timestamp)
             : createMinMaxSubtitle(numAtMin)
     }
 
