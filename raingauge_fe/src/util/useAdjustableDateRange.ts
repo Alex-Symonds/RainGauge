@@ -9,18 +9,20 @@
         minDate                     Earliest timestamp in the unfiltered data (for setting "min" on input fields)
         maxDate                     Latest timestamp in the unfiltered data (for setting "max" on input fields)
         updateDateRange             Function to change the data range
+        getMonthOptionData          Creates an array of data for populating the options in a month <select>
 */
 
 import { useState } from "react";
-import { T_RainGaugeReading } from "./useRainGaugeData";
-import { formatDate } from "./dateStringHelpers";
+import { T_FetchedData, T_RainGaugeReading } from "./useRainGaugeData";
+import { formatDate, formatTwoDigits } from "./dateStringHelpers";
+import { T_SelectMonthOption } from "@/components/graphForm/util/useOneMonthSelectForm";
 
 export type T_DateRange = {
     start : Date | null,
     end : Date | null,
 }
 
-export function useDynamicTimeSeries(fetchedData : any){
+export function useAdjustableDateRange(fetchedData : T_FetchedData){
     const [dateRange, setDateRange] = useState<null | T_DateRange>(null);
 
     // Updating the date range
@@ -112,12 +114,47 @@ export function useDynamicTimeSeries(fetchedData : any){
     }();
 
 
+    function getMonthOptionData() : T_SelectMonthOption[] {
+        if(fetchedData.isLoading || fetchedData.error || fetchedData.data.data.length === 0){
+            return [];
+        }
+
+        const start = new Date(startAndEnd.start);
+        const end = new Date(startAndEnd.end);
+
+        let monthOptionData = [];
+        for(let year = start.getFullYear(); year <= end.getFullYear(); year++){
+
+            const startMonth = year === start.getFullYear()
+                ? start.getMonth()
+                : 0;
+            const endMonth = year === end.getFullYear()
+                ? end.getMonth()
+                : 12;
+
+            for(let month = startMonth; month < endMonth; month++){
+                const firstDayOfMonth = new Date(year, month, 1);
+                const lastDayOfMonth = new Date(year, month + 1, 0);
+                const newMonthData = {
+                    display: `${firstDayOfMonth.toLocaleString('default', { month: 'long' })} ${firstDayOfMonth.getFullYear()}`,
+                    value: `${firstDayOfMonth.getFullYear()}-${formatTwoDigits(firstDayOfMonth.getMonth()+1)}`,
+                    startTimestamp: `${firstDayOfMonth.getFullYear()}-${formatTwoDigits(firstDayOfMonth.getMonth() + 1)}-01T00:00`,
+                    endTimestamp: `${lastDayOfMonth.getFullYear()}-${formatTwoDigits(lastDayOfMonth.getMonth() + 1)}-${lastDayOfMonth.getDate()}T23:59`
+                }
+                monthOptionData.push(newMonthData);
+            }
+        }
+
+        return monthOptionData;
+    }
+
     return {
         data: filterAndSortData([]),
         filterDataToDateRange,
         getTimeRangeGraphTitle,
         minDate: startAndEnd.start,
         maxDate: startAndEnd.end,
+        monthOptionData: getMonthOptionData(),
         updateDateRange,
     }
 }

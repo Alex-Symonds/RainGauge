@@ -1,8 +1,6 @@
-import { T_FormErrors } from "@/util/useTimeSeriesForm";
+import { T_FormErrors } from "./util/useInteractiveData";
 
-import styles from './GraphForm.module.scss';
-
-type T_GraphControlsProps = {
+export type T_CustomFormProps = {
     controlledEnd : string,
     controlledStart : string,
     updateEnd : (dateStr : string) => void,
@@ -13,17 +11,13 @@ type T_GraphControlsProps = {
     max : string,
 }
 
-export function GraphForm({
-    controlledEnd, controlledStart, updateEnd, updateGraphData, updateStart, errors, min, max
-} : T_GraphControlsProps){
-
+export function CustomForm({ controlledEnd, controlledStart, updateEnd, updateGraphData, updateStart, errors, min, max } : T_CustomFormProps){
     const idStart = "id_formInput_start";
     const idEnd = "id_formInput_end";
 
     return (
-        <form className={ `${styles.form}` }>
-            <h3 className="h5">Set date range</h3>
-            <div className="mt-4">
+        <>
+            <div>
                 <label htmlFor={idStart} className="form-label">Start</label>
                 <input 
                     type="datetime-local" 
@@ -41,6 +35,7 @@ export function GraphForm({
                 }
                 </p>
             </div>
+                
             <div className="mt-3">
                 <label htmlFor={idEnd} className="form-label">End</label>
                 <input 
@@ -52,13 +47,14 @@ export function GraphForm({
                     min={min}
                     max={max}
                 />
-             <p>
+                <p>
                 { errors.end !== "" ?
                     errors.end
                     : null
                 }
                 </p>
             </div>
+
             <div className={"mt-5"}>
                 <p>
                 { errors.update !== "" ?
@@ -73,8 +69,7 @@ export function GraphForm({
                 >
                     Update
                 </button>
-
             </div>
-        </form>
+        </>
     )
 }

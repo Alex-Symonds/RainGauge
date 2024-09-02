@@ -16,19 +16,19 @@ export function formatDate(input : Date | string){
         ? convertStringToDate(input)
         : input;
 
-    function format(num : number){
-        return num.toString().padStart(2, '0');
-    }
-
     return `${
-        format(date.getDate())
+        formatTwoDigits(date.getDate())
     }/${
-        format(date.getMonth()+1)
+        formatTwoDigits(date.getMonth()+1)
     }/${
         date.getFullYear()
     } ${
-        format(date.getHours())
+        formatTwoDigits(date.getHours())
     }:${
-        format(date.getMinutes())
+        formatTwoDigits(date.getMinutes())
     }`;  
+}
+
+export function formatTwoDigits(num : number){
+    return num.toString().padStart(2, '0');
 }

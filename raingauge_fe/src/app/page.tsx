@@ -1,26 +1,29 @@
 'use client'
 
-import { GraphWithForm } from "@/components/graph/GraphWithForm";
+import { GraphWithForm } from "@/components/GraphWithForm";
 import { useRainGaugeData } from "@/util/useRainGaugeData";
 
 
-import { useTimeSeriesForm } from "@/util/useTimeSeriesForm";
 import { PageHeader } from "@/components/header/Header";
 import { MapPanel } from "@/components/map/MapPanel";
 import { StatsCards } from "@/components/statsCards/StatsCards";
-import { useDynamicTimeSeries } from "@/util/useDynamicTimeSeries";
+import { useAdjustableDateRange } from "@/util/useAdjustableDateRange";
 import { splitIntoCoords } from "@/util/splitIntoCoords";
+import { useInteractiveData } from "@/components/graphForm/util/useInteractiveData";
 
 
 export default function Home() {
+
   const rainData = useRainGaugeData();
-  const graphData = useDynamicTimeSeries(rainData);
-  const formKit = useTimeSeriesForm({
-    updateDateRange: graphData.updateDateRange,
-    defaultStart: graphData.minDate,
-    defaultEnd: graphData.maxDate,
+  const dataInDateRange = useAdjustableDateRange(rainData);
+  const formKit = useInteractiveData({
+    updateDateRange: dataInDateRange.updateDateRange,
+    minDate: dataInDateRange.minDate,
+    maxDate: dataInDateRange.maxDate,
+    monthOptionData: dataInDateRange.monthOptionData,
   });
-  const graphCoords = splitIntoCoords(graphData.data);
+
+  const graphCoords = splitIntoCoords(dataInDateRange.data);
 
   return (
       <main>
@@ -32,7 +35,7 @@ export default function Home() {
             <p>Loading...</p>
             :
             <GraphWithForm 
-              title = { graphData.getTimeRangeGraphTitle() }
+              title = { dataInDateRange.getTimeRangeGraphTitle() }
               xCoords = { graphCoords.xCoords }
               yCoords = { graphCoords.yCoords }
               formKit = { formKit }
@@ -40,10 +43,10 @@ export default function Home() {
           }
           </div>
 
-          {graphData.data.length !== 0 ?
+          {dataInDateRange.data.length !== 0 ?
           <div className="row mt-5">
             <StatsCards 
-              data = { graphData.data }
+              data = { dataInDateRange.data }
             />
           </div>
           : null
