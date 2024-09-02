@@ -1,3 +1,7 @@
+/*
+    Performs calculations and formats the data for use in the "stats cards"
+*/
+
 import { formatDate } from "@/util/dateStringHelpers";
 
 type T_StatsAccumulator = {
@@ -23,7 +27,6 @@ export function createStatsData(filteredData : any[]) : null | any[]{
     }, { total: 0, min: Infinity, max: -Infinity });
 
     const totalObj = {
-        image: "?",
         title: "Total",
         main: formatWithMM(stats.total),
         subtitle: `${filteredData.length.toLocaleString()} readings over ${ Math.round(filteredData.length/READINGS_PER_DAY) } days`
@@ -31,7 +34,6 @@ export function createStatsData(filteredData : any[]) : null | any[]{
 
     const numAtMax = filteredData.filter(record => parseFloat(record.reading) === stats.max).length;
     const maxObj = {
-        image: "?",
         title: "High",
         main: formatWithMM(stats.max),
         subtitle: numAtMax === 1
@@ -41,7 +43,6 @@ export function createStatsData(filteredData : any[]) : null | any[]{
 
     const numAtMin = filteredData.filter(record => parseFloat(record.reading) === stats.min).length;
     const minObj = {
-        image: "?",
         title: "Low",
         main: formatWithMM(stats.min),
         subtitle: numAtMin === 1
@@ -50,7 +51,6 @@ export function createStatsData(filteredData : any[]) : null | any[]{
     }
 
     const averageObj = {
-        image: "?",
         title: "Average",
         main: filteredData.length === 0 ? formatWithMM(0) : formatWithMM(stats.total / filteredData.length),
         subtitle: "per 15 mins"

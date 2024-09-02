@@ -3,13 +3,12 @@
     and sorting in chronological order for a timeseries graph.
 
     Outputs:
-        data                        Filtered to the date range and sorted into time order
-        filterDataToDateRange       In case you only want the filtering without the sorting
+        data                        Rain gauge data filtered to the date range and sorted into time order
         getTimeRangeGraphTitle      Generates a title for the graph
         minDate                     Earliest timestamp in the unfiltered data (for setting "min" on input fields)
         maxDate                     Latest timestamp in the unfiltered data (for setting "max" on input fields)
+        monthOptionData             Creates an array of data for populating the options in a month <select>
         updateDateRange             Function to change the data range
-        getMonthOptionData          Creates an array of data for populating the options in a month <select>
 */
 
 import { useState } from "react";
@@ -98,9 +97,10 @@ export function useAdjustableDateRange(fetchedData : T_FetchedData){
         const selectedData = filterAndSortData([{ reading: '0', timestamp: "01/01/1900T00:00" }]);
         const startStr = formatDate(selectedData[0].timestamp);
         const endStr = formatDate(selectedData[selectedData.length - 1].timestamp);
-        return `Data from ${startStr} to ${endStr}`;
+        return `Data from ${startStr}<br>to ${endStr}`;
     }
 
+    // Get the first and last timestamp in the data, for use setting min/max on inputs
     const startAndEnd = function getStartAndEndOfAvailableData(){
         if(fetchedData.isLoading || fetchedData.error || fetchedData.data.data.length === 0){
             return { start: "", end: "" };
@@ -113,7 +113,8 @@ export function useAdjustableDateRange(fetchedData : T_FetchedData){
             }
     }();
 
-
+    // Support for the "select one month" select: creates a list of months, with 
+    // human-readable names, computer-readable values, and how this translates to timestamps
     function getMonthOptionData() : T_SelectMonthOption[] {
         if(fetchedData.isLoading || fetchedData.error || fetchedData.data.data.length === 0){
             return [];
@@ -123,7 +124,7 @@ export function useAdjustableDateRange(fetchedData : T_FetchedData){
         const end = new Date(startAndEnd.end);
 
         let monthOptionData = [];
-        for(let year = start.getFullYear(); year <= end.getFullYear(); year++){
+        for(let year = start.getFullYear(); year < end.getFullYear() + 1; year++){
 
             const startMonth = year === start.getFullYear()
                 ? start.getMonth()
@@ -150,7 +151,6 @@ export function useAdjustableDateRange(fetchedData : T_FetchedData){
 
     return {
         data: filterAndSortData([]),
-        filterDataToDateRange,
         getTimeRangeGraphTitle,
         minDate: startAndEnd.start,
         maxDate: startAndEnd.end,

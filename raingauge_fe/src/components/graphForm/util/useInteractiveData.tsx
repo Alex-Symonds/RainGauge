@@ -8,8 +8,6 @@ import { useOneMonthSelectForm, T_SelectMonthOption } from "./useOneMonthSelectF
 
 
 export type T_FormErrors = {
-    start : string | null,
-    end : string | null,
     update: string | null
 }
 

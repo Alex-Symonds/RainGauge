@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import styles from './MapPanel.module.scss';
 
 export function MapPanel({ data } : any){
-    // Apparently next's server-side rendering can clash with Leaflet and importing this way helps
+    // Apparently Next's server-side rendering can clash with Leaflet and importing in this way helps
     const Map = useMemo(() => dynamic(
         () => import('@/components/map/Map'),
         { 

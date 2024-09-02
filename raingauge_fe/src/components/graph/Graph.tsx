@@ -1,9 +1,12 @@
 'use client'
+/*
+    UI component displaying a Plotly map
+*/
+
 import dynamic from "next/dynamic";
 import styles from './Graph.module.scss';
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false, })
-
 
 type T_GraphProps = {
     title : string,
@@ -14,7 +17,7 @@ type T_GraphProps = {
 export function Graph({ xCoords, yCoords, title } : T_GraphProps){
     return <div id="tester" className={`container rounded ${styles.graphContainer}`}>
         <Plot
-            //@ts-ignore
+            //@ts-ignore (TypeScript is fussing, but since this is a third-party thing and it works, TS can shush)
             data={[
                     {
                         x: xCoords ?? [],
@@ -25,7 +28,6 @@ export function Graph({ xCoords, yCoords, title } : T_GraphProps){
                     },
 
             ]}
-            // layout={ { width: 800, height: 400, title } }
             layout={ { title } } 
             useResizeHandler={true}
             style={{width: "100%", height: "100%"}}

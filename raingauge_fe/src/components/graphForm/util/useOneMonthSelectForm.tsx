@@ -1,7 +1,7 @@
 "use client"
 
 /*
-    Controlled graph fields and error handling for user inputs
+    Controlled graph fields and error handling for the "select one month" section of the form
 */
 
 import { useState } from "react";
@@ -30,7 +30,6 @@ export function useOneMonthSelectForm({ updateDateRange, monthOptionData } : T_U
             setMonthSelectError("Invalid month selected");
         }
         else{
-            console.log("update setting to", monthValue);
             setSelectMonth(monthValue);
             const dateRange = {
                 start: convertStringToDate(chosenMonth.startTimestamp),

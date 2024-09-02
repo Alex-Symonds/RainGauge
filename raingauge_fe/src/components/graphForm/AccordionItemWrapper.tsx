@@ -1,3 +1,7 @@
+/*
+    Wrapper implementing Bootstrap's accordion item
+*/
+
 import { ReactNode } from "react"
 
 type T_AccordionItemWrapper = {
