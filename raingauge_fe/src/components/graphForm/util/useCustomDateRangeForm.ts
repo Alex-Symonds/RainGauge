@@ -7,39 +7,36 @@
 import { useEffect, useState } from "react";
 import { convertStringToDate, strIsValidForDateCreation } from "@/util/dateStringHelpers";
 
-export type T_FormErrors = {
-    start : string | null,
-    end : string | null,
-    update: string | null
-}
-
-type T_UseInteractiveGraphProps = {
+type T_UseCustomDateRangeProps = {
     updateDateRange : any, 
     defaultStart : string, 
-    defaultEnd : string
+    defaultEnd : string,
 }
 
-export function useTimeSeriesForm({ updateDateRange, defaultStart, defaultEnd } : T_UseInteractiveGraphProps){
-    const [start, setStart] = useState<string>("");
-    const [end, setEnd] = useState<string>("");
+export function useCustomDateRangeForm({ updateDateRange, defaultStart, defaultEnd } : T_UseCustomDateRangeProps){
+    
+    const [customStart, setCustomStart] = useState<string>("");
+    const [customEnd, setCustomEnd] = useState<string>("");
+
     const [startError, setStartError] = useState<string | null>(null);
     const [endError, setEndError] = useState<string | null>(null);
     const [updateError, setUpdateError] = useState<string | null>(null);
 
     useEffect(() => {
-        if(start===""){
-            setStart(defaultStart);
+        if(customStart===""){
+            setCustomStart(defaultStart);
         }
-        if(end === ""){
-            setEnd(defaultEnd);
+        if(customEnd === ""){
+            setCustomEnd(defaultEnd);
         }
     }, [defaultStart, defaultEnd]);
+
 
     function updateStart(datetimeStr : string){
         if(strIsValidForDateCreation(datetimeStr)){
             setUpdateError(null);
             setStartError(null);
-            setStart(datetimeStr);
+            setCustomStart(datetimeStr);
         }
         else {
             setStartError("Invalid: not a date");
@@ -50,7 +47,7 @@ export function useTimeSeriesForm({ updateDateRange, defaultStart, defaultEnd } 
         if(strIsValidForDateCreation(datetimeStr)){
             setUpdateError(null);
             setEndError(null);
-            setEnd(datetimeStr);
+            setCustomEnd(datetimeStr);
         }
         else {
             setStartError("Invalid: not a date");
@@ -58,13 +55,13 @@ export function useTimeSeriesForm({ updateDateRange, defaultStart, defaultEnd } 
     }
 
     function updateGraphData(){
-        const startDateNum = new Date(start).valueOf();
-        const endDateNum = new Date(end).valueOf();
+        const startDateNum = new Date(customStart).valueOf();
+        const endDateNum = new Date(customEnd).valueOf();
 
         if(endDateNum >= startDateNum){
             const dateRange = {
-                start: convertStringToDate(start),
-                end: convertStringToDate(end),
+                start: convertStringToDate(customStart),
+                end: convertStringToDate(customEnd),
             }
             updateDateRange(dateRange); 
         }
@@ -73,16 +70,28 @@ export function useTimeSeriesForm({ updateDateRange, defaultStart, defaultEnd } 
         }
     }
 
+    function onReset(){
+        setCustomStart(defaultStart);
+        setCustomEnd(defaultEnd);
+    }
+
     return {
-        start,
-        end,
+        customStart,
         updateStart,
+
+        customEnd,
         updateEnd,
+        
         updateGraphData,
+        onReset,
+        
         errors: {
             start: startError,
             end: endError,
             update: updateError,
-        }
+        },
+
+        minDate: defaultStart,
+        maxDate: defaultEnd,
     }
 }

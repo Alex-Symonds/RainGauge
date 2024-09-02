@@ -10,6 +10,14 @@ export type T_RainGaugeReading = {
     reading: string,
 }
 
+export type T_FetchedData = {
+    data : any,
+    error : boolean,
+    isLoading : boolean, 
+    lat : number, 
+    long : number, 
+}
+
 export function useRainGaugeData(){
     const apiURL = "http://127.0.0.1:8000/api/";
 
