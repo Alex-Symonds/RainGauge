@@ -1,4 +1,4 @@
-import { StatsCard } from "./StatsCard";
+import { StatsCard, T_StatsCardProps } from "./StatsCard";
 
 import { T_RainGaugeReading } from "@/util/useRainGaugeData";
 import { createStatsData } from "./createStatsData";
@@ -14,7 +14,7 @@ export function StatsCards({ data } : T_StatsCardsProps){
         <>
     { statsData !== null ?
         <div className={`container d-flex gap-3 flex-wrap`}>
-            { statsData.map((record: any, idx: number) => {
+            { statsData.map((record: T_StatsCardProps, idx: number) => {
                 return <StatsCard key={`${record.title.replaceAll(" ", "")}-${idx}`}
                     title = { record.title }
                     main = { record.main }

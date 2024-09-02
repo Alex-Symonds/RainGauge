@@ -6,11 +6,28 @@
 
 import { useEffect, useState } from "react";
 import { convertStringToDate, strIsValidForDateCreation } from "@/util/dateStringHelpers";
+import { T_AdjustableDateRangeOutput } from "@/util/useAdjustableDateRange";
 
-type T_UseCustomDateRangeProps = {
-    updateDateRange : any, 
+type T_UseCustomDateRangeProps = 
+    Pick<T_AdjustableDateRangeOutput, 
+        "updateDateRange"
+    > & {
     defaultStart : string, 
     defaultEnd : string,
+}
+
+export type T_UseCustomDateRangeOutput = {
+    customStart : string,
+    updateStart : (datetimeStr : string) => void,
+    customEnd : string,
+    updateEnd : (datetimeStr : string) => void,
+    updateGraphData : () => void,
+    onReset : () => void,
+    errors: {
+        update : string,
+    },
+    minDate : string,
+    maxDate : string,
 }
 
 export function useCustomDateRangeForm({ updateDateRange, defaultStart, defaultEnd } : T_UseCustomDateRangeProps){

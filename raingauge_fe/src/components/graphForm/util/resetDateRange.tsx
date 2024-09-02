@@ -1,10 +1,13 @@
 import { convertStringToDate, strIsValidForDateCreation } from "@/util/dateStringHelpers";
-import { T_DateRange } from "../../../util/useAdjustableDateRange";
+import { T_AdjustableDateRangeOutput } from "../../../util/useAdjustableDateRange";
 
-type T_ResetDateRangeProps = {
+type T_ResetDateRangeProps = 
+    Pick<T_AdjustableDateRangeOutput, 
+        "updateDateRange"
+    >
+    & {
     defaultStart : string, 
-    defaultEnd : string,
-    updateDateRange : (value : T_DateRange) => void,   
+    defaultEnd : string, 
 }
 
 export function resetDateRange({defaultStart, defaultEnd, updateDateRange} : T_ResetDateRangeProps){

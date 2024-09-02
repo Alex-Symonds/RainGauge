@@ -21,7 +21,16 @@ export type T_DateRange = {
     end : Date | null,
 }
 
-export function useAdjustableDateRange(fetchedData : T_FetchedData){
+export type T_AdjustableDateRangeOutput = {
+    data : T_RainGaugeReading[],
+    getTimeRangeGraphTitle: () => string,
+    minDate : string,
+    maxDate : string,
+    monthOptionData : T_SelectMonthOption[],
+    updateDateRange : (dateRamgeObj : T_DateRange | null) => void,
+}
+
+export function useAdjustableDateRange(fetchedData : T_FetchedData) : T_AdjustableDateRangeOutput{
     const [dateRange, setDateRange] = useState<null | T_DateRange>(null);
 
     // Updating the date range
@@ -38,10 +47,12 @@ export function useAdjustableDateRange(fetchedData : T_FetchedData){
     }
 
     function isValidDateRange(variable : any){
+        
         function isValidDateOrNull(variable : any){
             return variable === null
                 || Object.prototype.toString.call(variable) === "[object Date]";
         }
+
         return variable !== null
             && typeof variable === 'object' 
             && 'start' in variable
