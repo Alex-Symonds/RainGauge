@@ -1,0 +1,25 @@
+@import 'node_modules/bootstrap/scss/functions';
+@import 'node_modules/bootstrap/scss/variables';
+@import 'node_modules/bootstrap/scss/mixins';
+
+.card{
+    border-color: var(--c-panelBorder);
+    width: 100%;
+    min-width: 150px;
+}
+
+@include media-breakpoint-up(md) {
+    .card{
+        width: calc(50% - 1.5rem);
+    }
+}
+@include media-breakpoint-up(lg) {
+    .card{
+        width: calc(25% - 1.5rem);
+    }
+}
+.header{
+    background: var(--c-panelBg);
+    border-color: var(--c-panelBorder);
+}
+

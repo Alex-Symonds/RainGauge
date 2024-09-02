@@ -1,5 +1,10 @@
 :root {
- 
+
+  --c-accent: #73bcee;
+  --c-panelBg: #eff6fc;
+  --c-panelBorder: #cfe0ee;
+  
+
 }
 
 @media (prefers-color-scheme: dark) {

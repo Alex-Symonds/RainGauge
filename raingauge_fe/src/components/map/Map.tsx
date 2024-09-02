@@ -10,7 +10,7 @@ export default function MyMap(props: any) {
   const { position, zoom } = props;
 
   return (
-    <div className="mb-5" style={ {border: "1px solid black"} }>
+    <div className="mb-3">
         <MapContainer center={position} zoom={zoom} scrollWheelZoom={false} style={ {height: "25vh", width: "100%"} }>
             <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -18,11 +18,10 @@ export default function MyMap(props: any) {
             />
             <Marker position={position}>
                 <Popup>
-                A pretty CSS3 popup. <br /> Easily customizable.
+                    Rain gauge (RG_A)
                 </Popup>
             </Marker>
         </MapContainer>
-  </div>
-
+    </div>
   )
 }
