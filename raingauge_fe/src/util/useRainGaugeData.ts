@@ -1,6 +1,5 @@
 /*
-    Fetches rain gauge data from the server and stores hard-coded long and lat
-    for the apparatus' location
+    Fetches rain gauge data from the server and stores some hard-coded rain gauge details
 */
 
 import useSWR from "swr";
@@ -28,7 +27,7 @@ export function useRainGaugeData(){
     const locationName = "Birmingham, United Kingdom";
 
     // While this might just have been the name of /the column/, I choose to believe it's the rain gauge's
-    // name: it's pronounced "Reggie"
+    // name: it's pronounced "Redge-ay".
     const gaugeName = "RG_A";
 
 

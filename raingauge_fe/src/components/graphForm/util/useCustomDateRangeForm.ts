@@ -1,7 +1,7 @@
 "use client"
 
 /*
-    Controlled graph fields and error handling for user inputs
+    Controlled form fields for the custom date range section
 */
 
 import { useEffect, useState } from "react";
@@ -17,9 +17,6 @@ export function useCustomDateRangeForm({ updateDateRange, defaultStart, defaultE
     
     const [customStart, setCustomStart] = useState<string>("");
     const [customEnd, setCustomEnd] = useState<string>("");
-
-    const [startError, setStartError] = useState<string | null>(null);
-    const [endError, setEndError] = useState<string | null>(null);
     const [updateError, setUpdateError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -33,31 +30,29 @@ export function useCustomDateRangeForm({ updateDateRange, defaultStart, defaultE
 
 
     function updateStart(datetimeStr : string){
+        setUpdateError(null);
+
         if(strIsValidForDateCreation(datetimeStr)){
-            setUpdateError(null);
-            setStartError(null);
             setCustomStart(datetimeStr);
-        }
-        else {
-            setStartError("Invalid: not a date");
         }
     }
 
     function updateEnd(datetimeStr : string){
+        setUpdateError(null);
+
         if(strIsValidForDateCreation(datetimeStr)){
-            setUpdateError(null);
-            setEndError(null);
             setCustomEnd(datetimeStr);
-        }
-        else {
-            setStartError("Invalid: not a date");
         }
     }
 
     function updateGraphData(){
+        if(!strIsValidForDateCreation(customStart) && !strIsValidForDateCreation(customEnd)){
+            setUpdateError("The dates are garbled. Try reloading the page.");
+            return;
+        }
+
         const startDateNum = new Date(customStart).valueOf();
         const endDateNum = new Date(customEnd).valueOf();
-
         if(endDateNum >= startDateNum){
             const dateRange = {
                 start: convertStringToDate(customStart),
@@ -86,8 +81,6 @@ export function useCustomDateRangeForm({ updateDateRange, defaultStart, defaultE
         onReset,
         
         errors: {
-            start: startError,
-            end: endError,
             update: updateError,
         },
 

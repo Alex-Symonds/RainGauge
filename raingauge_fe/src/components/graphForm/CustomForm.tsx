@@ -1,4 +1,9 @@
+/*
+    UI Component for the contents of the "custom date range" portion of the form
+*/
+
 import { T_FormErrors } from "./util/useInteractiveData";
+
 
 export type T_CustomFormProps = {
     controlledEnd : string,
@@ -14,7 +19,6 @@ export type T_CustomFormProps = {
 export function CustomForm({ controlledEnd, controlledStart, updateEnd, updateGraphData, updateStart, errors, min, max } : T_CustomFormProps){
     const idStart = "id_formInput_start";
     const idEnd = "id_formInput_end";
-
     return (
         <>
             <div>
@@ -28,12 +32,6 @@ export function CustomForm({ controlledEnd, controlledStart, updateEnd, updateGr
                     min={min}
                     max={max}
                 />
-                <p>
-                { errors.start !== "" ?
-                    errors.start
-                    : null
-                }
-                </p>
             </div>
                 
             <div className="mt-3">
@@ -47,21 +45,15 @@ export function CustomForm({ controlledEnd, controlledStart, updateEnd, updateGr
                     min={min}
                     max={max}
                 />
-                <p>
-                { errors.end !== "" ?
-                    errors.end
-                    : null
-                }
-                </p>
             </div>
 
             <div className={"mt-5"}>
-                <p>
+                <div role="region" aria-live="polite">
                 { errors.update !== "" ?
-                    errors.update
+                    <p className="alert alert-danger">{errors.update}</p>
                     : null
                 }
-                </p>
+                </div>
                 <button 
                     type="button" 
                     className="btn btn-primary"

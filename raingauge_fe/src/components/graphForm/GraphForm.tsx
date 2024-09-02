@@ -1,3 +1,7 @@
+/*
+    UI component for the full "set time range" form panel
+*/
+
 import { AccordionItemWrapper } from "./AccordionItemWrapper";
 import { CustomForm, T_CustomFormProps } from "./CustomForm";
 import { OneMonthForm, T_OneMonthFormProps } from "./OneMonthForm";

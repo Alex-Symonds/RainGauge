@@ -1,3 +1,6 @@
+/*
+    UI Component for the contents of the "one month" portion of the form
+*/
 
 import { T_SelectMonthOption } from "./util/useOneMonthSelectForm";
 

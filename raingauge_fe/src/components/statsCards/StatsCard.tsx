@@ -2,15 +2,12 @@ import styles from './StatsCard.module.scss';
 
 
 export type T_StatsCardProps = {
-    image : any,
     title : string,
     main : string,
     subtitle? : string,
 }
 
-
-
-export function StatsCard({ image, title, main, subtitle } : T_StatsCardProps){
+export function StatsCard({ title, main, subtitle } : T_StatsCardProps){
     return (
         <div className={`card ${styles.card}`}>
             <div className={`card-header d-flex ${styles.header}`}>

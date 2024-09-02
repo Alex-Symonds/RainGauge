@@ -1,15 +1,15 @@
 'use client'
 
-import { GraphWithForm } from "@/components/GraphWithForm";
-import { useRainGaugeData } from "@/util/useRainGaugeData";
-
-
 import { PageHeader } from "@/components/header/Header";
 import { MapPanel } from "@/components/map/MapPanel";
 import { StatsCards } from "@/components/statsCards/StatsCards";
+
+import { GraphWithForm } from "@/components/GraphWithForm";
+import { useInteractiveData } from "@/components/graphForm/util/useInteractiveData";
+
+import { useRainGaugeData } from "@/util/useRainGaugeData";
 import { useAdjustableDateRange } from "@/util/useAdjustableDateRange";
 import { splitIntoCoords } from "@/util/splitIntoCoords";
-import { useInteractiveData } from "@/components/graphForm/util/useInteractiveData";
 
 
 export default function Home() {

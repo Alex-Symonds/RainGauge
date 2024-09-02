@@ -1,8 +1,13 @@
+/*
+    UI component making the section containing a form with the graph next to it
+*/
+
 import { Graph } from "./graph/Graph";
 import { GraphForm } from "./graphForm/GraphForm";
 
 export function GraphWithForm({ title, xCoords, yCoords, formKit } : any){
-    return <div className="row mt-3">
+    return (
+        <div className="row mt-3">
             <div className="col-12 col-md-5 col-lg-4 col-xl-3 order-2 order-md-1">
                 <GraphForm
                     controlledEnd = { formKit.customDateRange.customEnd }
@@ -29,5 +34,5 @@ export function GraphWithForm({ title, xCoords, yCoords, formKit } : any){
                 />
             </div>
     </div>
-
+    )
 }

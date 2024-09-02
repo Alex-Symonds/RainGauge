@@ -10,12 +10,12 @@
 
 @include media-breakpoint-up(md) {
     .card{
-        width: calc(50% - 1.5rem);
+        width: calc(50% - 1rem);
     }
 }
 @include media-breakpoint-up(lg) {
     .card{
-        width: calc(25% - 1.5rem);
+        width: calc(25% - 1rem);
     }
 }
 .header{
