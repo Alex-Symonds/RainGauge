@@ -19,6 +19,9 @@ export type T_CustomFormProps = {
 export function CustomForm({ controlledEnd, controlledStart, updateEnd, updateGraphData, updateStart, errors, min, max } : T_CustomFormProps){
     const idStart = "id_formInput_start";
     const idEnd = "id_formInput_end";
+
+    console.log("errors.update = ", errors.update);
+
     return (
         <>
             <div>
@@ -49,7 +52,7 @@ export function CustomForm({ controlledEnd, controlledStart, updateEnd, updateGr
 
             <div className={"mt-5"}>
                 <div role="region" aria-live="polite">
-                { errors.update !== "" ?
+                { errors.update !== null && errors.update !== undefined && errors.update !== "" ?
                     <p className="alert alert-danger">{errors.update}</p>
                     : null
                 }
