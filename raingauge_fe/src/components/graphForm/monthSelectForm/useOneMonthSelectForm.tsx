@@ -5,35 +5,20 @@
 */
 
 import { useState } from "react";
+
 import { convertStringToDate } from "@/util/dateStringHelpers";
-import { T_AdjustableDateRangeOutput } from "@/util/useAdjustableDateRange";
 
-export type T_SelectMonthOption = {
-    display : string,
-    value : string,
-    startTimestamp : string,
-    endTimestamp : string,
-}
+import { getMonthOptionData } from "./getMonthSelectOptions";
+import { T_UseOneMonthSelectFormProps } from "./types";
 
-export type T_UseOneMonthSelectFormOutput = 
-    Pick<T_AdjustableDateRangeOutput, 
-        "monthOptionData" 
-    > & {
-        monthSelect : string,
-        updateMonthSelect : (monthValue : string) => void,
-        error : string
-    };
+export function useOneMonthSelectForm({ maxDate, minDate, updateDateRange } : T_UseOneMonthSelectFormProps){
 
-type T_UseOneMonthSelectForm = 
-    Pick<T_AdjustableDateRangeOutput, 
-        "monthOptionData" 
-        | "updateDateRange"
-    >;
+    const valueForDisabledDefault = "disabledDefault";
 
-export function useOneMonthSelectForm({ updateDateRange, monthOptionData } : T_UseOneMonthSelectForm){
-
-    const [monthSelect, setSelectMonth] = useState<string>("");
+    const [monthSelect, setSelectMonth] = useState<string>(valueForDisabledDefault);
     const [monthSelectError, setMonthSelectError] = useState<string | null>(null);
+
+    const monthOptionData = getMonthOptionData({ start: minDate, end: maxDate });
 
     function updateMonthSelect(monthValue : string){
         const chosenMonth = monthOptionData.find(data => monthValue === data.value );
@@ -50,10 +35,15 @@ export function useOneMonthSelectForm({ updateDateRange, monthOptionData } : T_U
         }
     }
 
+    function onReset(){
+        setSelectMonth(valueForDisabledDefault);
+    }
+
     return {
-        monthSelect,
-        updateMonthSelect,
-        monthOptionData,
+        controlledMonthSelect: monthSelect,
         error: monthSelectError,
+        monthOptionData,
+        onReset,
+        updateMonthSelect,
     }
 }

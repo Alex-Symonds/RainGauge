@@ -2,23 +2,26 @@
     UI Component for the contents of the "custom date range" portion of the form
 */
 
-import { T_FormErrors } from "./util/useInteractiveData";
+import { useId } from "react";
+import { T_FormErrors } from "../util/useInteractiveData";
 
 
 export type T_CustomFormProps = {
     controlledEnd : string,
     controlledStart : string,
+    errors : T_FormErrors,
+    maxDate : string,
+    minDate : string,
     updateEnd : (dateStr : string) => void,
     updateGraphData : () => void,
-    updateStart : (dateStr : string) => void,
-    errors : T_FormErrors,
-    min : string,
-    max : string,
+    updateStart : (dateStr : string) => void, 
 }
 
-export function CustomForm({ controlledEnd, controlledStart, updateEnd, updateGraphData, updateStart, errors, min, max } : T_CustomFormProps){
-    const idStart = "id_formInput_start";
-    const idEnd = "id_formInput_end";
+
+export function CustomForm({ controlledEnd, controlledStart, errors, minDate, maxDate, updateEnd, updateGraphData, updateStart } : T_CustomFormProps){
+    const formSectionID = useId();
+    const idStart = formSectionID + "customStart";
+    const idEnd = formSectionID + "customEnd";
 
     return (
         <>
@@ -27,11 +30,11 @@ export function CustomForm({ controlledEnd, controlledStart, updateEnd, updateGr
                 <input 
                     type="datetime-local" 
                     className="form-control" 
-                    id={idStart} 
-                    value={controlledStart} 
+                    id={ idStart } 
+                    value={ controlledStart } 
                     onChange={ (e) => updateStart(e.target.value) }
-                    min={min}
-                    max={max}
+                    min = { minDate }
+                    max = { maxDate }
                 />
             </div>
                 
@@ -43,8 +46,8 @@ export function CustomForm({ controlledEnd, controlledStart, updateEnd, updateGr
                     id={idEnd} 
                     value={controlledEnd} 
                     onChange={ (e) => updateEnd(e.target.value) }
-                    min={min}
-                    max={max}
+                    min = { minDate }
+                    max = { maxDate }
                 />
             </div>
 

@@ -10,20 +10,21 @@ import { useInteractiveData } from "@/components/graphForm/util/useInteractiveDa
 import { useRainGaugeData } from "@/util/useRainGaugeData";
 import { useAdjustableDateRange } from "@/util/useAdjustableDateRange";
 import { splitIntoCoords } from "@/util/splitIntoCoords";
+import { getTimeRangeGraphTitle } from "@/util/getGraphTitle";
 
 
 export default function Home() {
-
   const rainData = useRainGaugeData();
   const dataInDateRange = useAdjustableDateRange(rainData);
+
   const formKit = useInteractiveData({
     updateDateRange: dataInDateRange.updateDateRange,
     minDate: dataInDateRange.minDate,
     maxDate: dataInDateRange.maxDate,
-    monthOptionData: dataInDateRange.monthOptionData,
   });
 
   const graphCoords = splitIntoCoords(dataInDateRange.data);
+  const graphTitle = getTimeRangeGraphTitle(dataInDateRange.data);
 
   return (
       <main>
@@ -37,7 +38,7 @@ export default function Home() {
             <p>Loading...</p>
             :
             <GraphWithForm 
-              title = { dataInDateRange.getTimeRangeGraphTitle() }
+              title = { graphTitle }
               xCoords = { graphCoords.xCoords }
               yCoords = { graphCoords.yCoords }
               formKit = { formKit }
@@ -63,5 +64,3 @@ export default function Home() {
       </main>
     )
 }
-
-//text-body-secondary
