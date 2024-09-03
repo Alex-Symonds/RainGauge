@@ -20,8 +20,6 @@ export function CustomForm({ controlledEnd, controlledStart, updateEnd, updateGr
     const idStart = "id_formInput_start";
     const idEnd = "id_formInput_end";
 
-    console.log("errors.update = ", errors.update);
-
     return (
         <>
             <div>
