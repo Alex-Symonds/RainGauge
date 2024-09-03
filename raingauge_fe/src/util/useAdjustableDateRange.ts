@@ -4,37 +4,40 @@
 
     Outputs:
         data                        Rain gauge data filtered to the date range and sorted into time order
-        getTimeRangeGraphTitle      Generates a title for the graph
         minDate                     Earliest timestamp in the unfiltered data (for setting "min" on input fields)
         maxDate                     Latest timestamp in the unfiltered data (for setting "max" on input fields)
-        monthOptionData             Creates an array of data for populating the options in a month <select>
         updateDateRange             Function to change the data range
 */
 
 import { useState } from "react";
 import { T_FetchedData, T_RainGaugeReading } from "./useRainGaugeData";
-import { formatDate, formatTwoDigits } from "./dateStringHelpers";
-import { T_SelectMonthOption } from "@/components/graphForm/util/useOneMonthSelectForm";
+import { sortInDateOrder } from "./sortRainGaugeData";
 
-export type T_DateRange = {
+
+type T_SelectedDateRange = {
     start : Date | null,
     end : Date | null,
 }
 
+export type T_TimeRangeOfData = {
+    start : string,
+    end : string,
+}
+
+export type T_UpdateDateRange = (dateRangeObj : T_SelectedDateRange | null) => void;
+
 export type T_AdjustableDateRangeOutput = {
     data : T_RainGaugeReading[],
-    getTimeRangeGraphTitle: () => string,
     minDate : string,
     maxDate : string,
-    monthOptionData : T_SelectMonthOption[],
-    updateDateRange : (dateRamgeObj : T_DateRange | null) => void,
+    updateDateRange : T_UpdateDateRange,
 }
 
 export function useAdjustableDateRange(fetchedData : T_FetchedData) : T_AdjustableDateRangeOutput{
-    const [dateRange, setDateRange] = useState<null | T_DateRange>(null);
+    const [dateRange, setDateRange] = useState<null | T_SelectedDateRange>(null);
 
     // Updating the date range
-    function updateDateRange(newDateRange : T_DateRange | null){
+    function updateDateRange(newDateRange : T_SelectedDateRange | null){
         if(newDateRange === null){
             setDateRange(null);
         }
@@ -93,25 +96,7 @@ export function useAdjustableDateRange(fetchedData : T_FetchedData) : T_Adjustab
         });
     }
 
-    function sortInDateOrder(data : T_RainGaugeReading[]){
-        return data.toSorted((a : T_RainGaugeReading, b : T_RainGaugeReading) => {
-            const aDate = new Date(a.timestamp).valueOf();
-            const bDate = new Date(b.timestamp).valueOf();
-            return aDate - bDate;
-        })
-    }
-
-    // Generate a title for the graph, showing the timestamps of the first and last data point in the selected time range
-    // (e.g. Suppose the user picked an end time of "23:59". Readings are at 15 min intervals, so the last data points 
-    // would be at 23:45, therefore "23:45" is displayed)
-    function getTimeRangeGraphTitle(){
-        const selectedData = filterAndSortData([{ reading: '0', timestamp: "01/01/1900T00:00" }]);
-        const startStr = formatDate(selectedData[0].timestamp);
-        const endStr = formatDate(selectedData[selectedData.length - 1].timestamp);
-        return `Data from ${startStr}<br>to ${endStr}`;
-    }
-
-    // Get the first and last timestamp in the data, for use setting min/max on inputs
+    // // Get the first and last timestamp in the data
     const startAndEnd = function getStartAndEndOfAvailableData(){
         if(fetchedData.isLoading || fetchedData.error || fetchedData.data.data.length === 0){
             return { start: "", end: "" };
@@ -124,48 +109,10 @@ export function useAdjustableDateRange(fetchedData : T_FetchedData) : T_Adjustab
             }
     }();
 
-    // Support for the "select one month" select: creates a list of months, with 
-    // human-readable names, computer-readable values, and how this translates to timestamps
-    function getMonthOptionData() : T_SelectMonthOption[] {
-        if(fetchedData.isLoading || fetchedData.error || fetchedData.data.data.length === 0){
-            return [];
-        }
-
-        const start = new Date(startAndEnd.start);
-        const end = new Date(startAndEnd.end);
-
-        let monthOptionData = [];
-        for(let year = start.getFullYear(); year < end.getFullYear() + 1; year++){
-
-            const startMonth = year === start.getFullYear()
-                ? start.getMonth()
-                : 0;
-            const endMonth = year === end.getFullYear()
-                ? end.getMonth()
-                : 12;
-
-            for(let month = startMonth; month < endMonth; month++){
-                const firstDayOfMonth = new Date(year, month, 1);
-                const lastDayOfMonth = new Date(year, month + 1, 0);
-                const newMonthData = {
-                    display: `${firstDayOfMonth.toLocaleString('default', { month: 'long' })} ${firstDayOfMonth.getFullYear()}`,
-                    value: `${firstDayOfMonth.getFullYear()}-${formatTwoDigits(firstDayOfMonth.getMonth()+1)}`,
-                    startTimestamp: `${firstDayOfMonth.getFullYear()}-${formatTwoDigits(firstDayOfMonth.getMonth() + 1)}-01T00:00`,
-                    endTimestamp: `${lastDayOfMonth.getFullYear()}-${formatTwoDigits(lastDayOfMonth.getMonth() + 1)}-${lastDayOfMonth.getDate()}T23:59`
-                }
-                monthOptionData.push(newMonthData);
-            }
-        }
-
-        return monthOptionData;
-    }
-
     return {
         data: filterAndSortData([]),
-        getTimeRangeGraphTitle,
         minDate: startAndEnd.start,
         maxDate: startAndEnd.end,
-        monthOptionData: getMonthOptionData(),
         updateDateRange,
     }
 }

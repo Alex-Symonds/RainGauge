@@ -2,25 +2,28 @@
     UI component for the full "set time range" form panel
 */
 
-import { AccordionItemWrapper } from "./AccordionItemWrapper";
-import { CustomForm, T_CustomFormProps } from "./CustomForm";
-import { OneMonthForm, T_OneMonthFormProps } from "./OneMonthForm";
+import { AccordionItemWrapper } from "./subcomponents/AccordionItemWrapper";
+import { CustomForm, T_CustomFormProps } from "./customDateRangeForm/CustomForm";
+import { OneMonthForm } from "./monthSelectForm/OneMonthForm";
+import { T_OneMonthFormProps } from "./monthSelectForm/types";
 
 import styles from './GraphForm.module.scss';
+import { DateAndDurationForm, T_DateAndDurationFormProps } from "./dateAndDurationForm/DateAndDurationForm";
 
-type T_GraphControlsProps = 
-    T_CustomFormProps
-    & T_OneMonthFormProps
-    & {
-        resetGraphData: () => void,
-    }
+type T_GraphControlsProps = {
+    customFormKit : T_CustomFormProps,
+    dateAndDurationKit : T_DateAndDurationFormProps,
+    oneMonthFormKit : T_OneMonthFormProps,
+    resetGraphData: () => void,
+}
 
 export function GraphForm({
-    controlledEnd, controlledStart, controlledMonthSelect, updateMonthSelect, monthOptionData, resetGraphData, updateEnd, updateGraphData, updateStart, errors, min, max
+    customFormKit, dateAndDurationKit, oneMonthFormKit, resetGraphData
 } : T_GraphControlsProps){
 
     const accordionID = 'id_formAccordion';
     const collapseOneMonthID = 'id_collapseOneMonth';
+    const collapseDateAndDurationID = 'id_collapseDateAndDuration';
     const collapseCustomID = 'id_collapseCustom';
     
     return (
@@ -35,11 +38,31 @@ export function GraphForm({
                     sectionID = { collapseOneMonthID }
                 >
                     <OneMonthForm
-                        controlledMonthSelect = { controlledMonthSelect }
-                        monthOptionData = { monthOptionData }
-                        updateMonthSelect = { updateMonthSelect }
+                        controlledMonthSelect = { oneMonthFormKit.controlledMonthSelect }
+                        monthOptionData = { oneMonthFormKit.monthOptionData }
+                        updateMonthSelect = { oneMonthFormKit.updateMonthSelect }
                     />
                 </AccordionItemWrapper>
+
+                <AccordionItemWrapper
+                    accordionID = { accordionID }
+                    isOpenOnLoad = { false }
+                    title = { "Date & Duration" }
+                    sectionID = { collapseDateAndDurationID }
+                >
+                    <DateAndDurationForm
+                        controlledStartDate = { dateAndDurationKit.controlledStartDate }
+                        controlledDuration = { dateAndDurationKit.controlledDuration }
+                        durationOptions = { dateAndDurationKit.durationOptions }
+                        error = { dateAndDurationKit.error }
+                        maxDate = { dateAndDurationKit.maxDate }
+                        minDate = { dateAndDurationKit.minDate }
+                        updateSelectedDuration = { dateAndDurationKit.updateSelectedDuration }
+                        updateStartDate = { dateAndDurationKit.updateStartDate }
+                        warning = { dateAndDurationKit.warning }
+                    />
+                </AccordionItemWrapper>
+
 
                 <AccordionItemWrapper
                     accordionID = { accordionID }
@@ -47,14 +70,14 @@ export function GraphForm({
                     sectionID = { collapseCustomID }
                 >
                     <CustomForm 
-                        controlledEnd = { controlledEnd } 
-                        controlledStart = { controlledStart } 
-                        updateEnd = { updateEnd } 
-                        updateGraphData = { updateGraphData } 
-                        updateStart = { updateStart } 
-                        errors = { errors } 
-                        min = { min } 
-                        max = { max } 
+                        controlledEnd = { customFormKit.controlledEnd } 
+                        controlledStart = { customFormKit.controlledStart } 
+                        updateEnd = { customFormKit.updateEnd } 
+                        updateGraphData = { customFormKit.updateGraphData } 
+                        updateStart = { customFormKit.updateStart } 
+                        errors = { customFormKit.errors } 
+                        minDate = { customFormKit.minDate } 
+                        maxDate = { customFormKit.maxDate } 
                     />
                 </AccordionItemWrapper>
 

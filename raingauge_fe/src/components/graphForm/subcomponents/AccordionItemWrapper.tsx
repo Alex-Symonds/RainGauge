@@ -2,7 +2,8 @@
     Wrapper implementing Bootstrap's accordion item
 */
 
-import { ReactNode } from "react"
+import { ReactNode } from "react";
+import styles from './AccordionItemWrapper.module.scss';
 
 type T_AccordionItemWrapper = {
     accordionID : string,

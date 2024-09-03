@@ -2,18 +2,21 @@
     One-stop shop packaging up the hooks and resets for the multi-part form
 */
 
-import { T_UseCustomDateRangeOutput, useCustomDateRangeForm } from "./useCustomDateRangeForm";
+import { T_UseCustomDateRangeOutput, useCustomDateRangeForm } from "../customDateRangeForm/useCustomDateRangeForm";
 import { resetDateRange } from "./resetDateRange";
-import { useOneMonthSelectForm, T_SelectMonthOption, T_UseOneMonthSelectFormOutput } from "./useOneMonthSelectForm";
+import { useOneMonthSelectForm } from "../monthSelectForm/useOneMonthSelectForm";
 import { T_AdjustableDateRangeOutput } from "@/util/useAdjustableDateRange";
+import { T_UseOneMonthSelectFormOutput } from "../monthSelectForm/types";
+import { T_UseDateAndDurationFormOutput, useDateAndDurationForm } from "../dateAndDurationForm/useDateAndDurationForm";
 
 
 export type T_FormErrors = {
-    update: string | null
+    [key: string]: string | null
 }
 
 export type T_UseInteractiveDataOutput = {
     customDateRange : T_UseCustomDateRangeOutput,
+    dateAndDuration : T_UseDateAndDurationFormOutput,
     oneMonthSelect : T_UseOneMonthSelectFormOutput,
     reset : () => void,
 }
@@ -21,25 +24,34 @@ export type T_UseInteractiveDataOutput = {
 type T_UseInteractiveDataProps = 
     Pick<T_AdjustableDateRangeOutput,
         "updateDateRange"
-        | "monthOptionData"
         | "maxDate"
         | "minDate"
     >;
-export function useInteractiveData({ maxDate, minDate, monthOptionData, updateDateRange } : T_UseInteractiveDataProps){
+
+export function useInteractiveData({ maxDate, minDate, updateDateRange } : T_UseInteractiveDataProps){
     
     const customDateRange = useCustomDateRangeForm({
-        defaultStart: minDate,
-        defaultEnd: maxDate,
+        minDate,
+        maxDate,
         updateDateRange,
     });
 
     const oneMonthSelect = useOneMonthSelectForm({
-        updateDateRange, 
-        monthOptionData
+        minDate,
+        maxDate,
+        updateDateRange
+    });
+
+    const dateAndDuration = useDateAndDurationForm({
+        minDate,
+        maxDate,
+        updateDateRange
     });
 
     function combinedReset(){
         customDateRange.onReset();
+        dateAndDuration.onReset();
+        oneMonthSelect.onReset();
 
         resetDateRange({
             defaultStart: minDate,
@@ -50,6 +62,7 @@ export function useInteractiveData({ maxDate, minDate, monthOptionData, updateDa
 
     return {
         customDateRange,
+        dateAndDuration,
         oneMonthSelect,
         reset: combinedReset
     }

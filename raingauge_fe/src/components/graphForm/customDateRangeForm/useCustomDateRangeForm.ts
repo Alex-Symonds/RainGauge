@@ -8,29 +8,30 @@ import { useEffect, useState } from "react";
 import { convertStringToDate, strIsValidForDateCreation } from "@/util/dateStringHelpers";
 import { T_AdjustableDateRangeOutput } from "@/util/useAdjustableDateRange";
 
+
+
 type T_UseCustomDateRangeProps = 
     Pick<T_AdjustableDateRangeOutput, 
         "updateDateRange"
-    > & {
-    defaultStart : string, 
-    defaultEnd : string,
-}
+        | "minDate"
+        | "maxDate"
+    >;
 
 export type T_UseCustomDateRangeOutput = {
-    customStart : string,
-    updateStart : (datetimeStr : string) => void,
-    customEnd : string,
-    updateEnd : (datetimeStr : string) => void,
-    updateGraphData : () => void,
-    onReset : () => void,
+    controlledEnd : string,
+    controlledStart : string,
     errors: {
-        update : string,
+        update : string | null,
     },
     minDate : string,
     maxDate : string,
+    onReset : () => void,
+    updateEnd : (datetimeStr : string) => void,
+    updateStart : (datetimeStr : string) => void,
+    updateGraphData : () => void,
 }
 
-export function useCustomDateRangeForm({ updateDateRange, defaultStart, defaultEnd } : T_UseCustomDateRangeProps){
+export function useCustomDateRangeForm({ updateDateRange, minDate : defaultStart, maxDate : defaultEnd } : T_UseCustomDateRangeProps){
     
     const [customStart, setCustomStart] = useState<string>("");
     const [customEnd, setCustomEnd] = useState<string>("");
@@ -88,20 +89,16 @@ export function useCustomDateRangeForm({ updateDateRange, defaultStart, defaultE
     }
 
     return {
-        customStart,
-        updateStart,
-
-        customEnd,
-        updateEnd,
-        
-        updateGraphData,
-        onReset,
-        
+        controlledEnd: customEnd,
+        controlledStart: customStart,
         errors: {
             update: updateError,
         },
-
-        minDate: defaultStart,
         maxDate: defaultEnd,
+        minDate: defaultStart,
+        onReset,
+        updateEnd,
+        updateGraphData,
+        updateStart,
     }
 }

@@ -2,13 +2,8 @@
     UI Component for the contents of the "one month" portion of the form
 */
 
-import { T_SelectMonthOption } from "./util/useOneMonthSelectForm";
+import { T_SelectMonthOption, T_OneMonthFormProps } from "./types";
 
-export type T_OneMonthFormProps = {
-    controlledMonthSelect : string,
-    monthOptionData : T_SelectMonthOption[],
-    updateMonthSelect : (value : string) => void,
-}
 
 
 export function OneMonthForm({ controlledMonthSelect, monthOptionData, updateMonthSelect } : T_OneMonthFormProps){
@@ -23,6 +18,9 @@ export function OneMonthForm({ controlledMonthSelect, monthOptionData, updateMon
                         value = { controlledMonthSelect }
                         onChange = { (e) => updateMonthSelect(e.target.value) }
                     >
+                        <option value="disabledDefault" disabled>
+                            Select a month
+                        </option>
                         { monthOptionData.map((optionData : T_SelectMonthOption) => {
                             return <option key={optionData.value}
                                         value={optionData.value}
