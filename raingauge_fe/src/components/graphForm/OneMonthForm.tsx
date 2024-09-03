@@ -18,6 +18,7 @@ export function OneMonthForm({ controlledMonthSelect, monthOptionData, updateMon
         <>
                     <label htmlFor={idMonthSelect} className="form-label">Select Month</label>
                     <select className="form-select"
+                        id = { idMonthSelect }
                         name = { "selectOneMonth" }
                         value = { controlledMonthSelect }
                         onChange = { (e) => updateMonthSelect(e.target.value) }
