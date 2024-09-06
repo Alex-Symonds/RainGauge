@@ -1,9 +1,9 @@
-import { T_RainGaugeReading } from "./useRainGaugeData";
+import { T_RainGaugeSubtotal } from "./useRainGaugeData";
 
-export function sortInDateOrder(data : T_RainGaugeReading[]){
-    return data.toSorted((a : T_RainGaugeReading, b : T_RainGaugeReading) => {
-        const aDate = new Date(a.timestamp).valueOf();
-        const bDate = new Date(b.timestamp).valueOf();
+export function sortSubtotalsInDateOrder(data : T_RainGaugeSubtotal[]){
+    return data.toSorted((a : T_RainGaugeSubtotal, b : T_RainGaugeSubtotal) => {
+        const aDate = new Date(a.lastTimestamp).valueOf();
+        const bDate = new Date(b.lastTimestamp).valueOf();
         return aDate - bDate;
     })
 }

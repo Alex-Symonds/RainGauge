@@ -3,21 +3,16 @@
     and sorting in chronological order for a timeseries graph.
 
     Outputs:
-        data                        Rain gauge data filtered to the date range and sorted into time order
+        subtotals                   Rain gauge data filtered to the date range and sorted into time order
         minDate                     Earliest timestamp in the unfiltered data (for setting "min" on input fields)
         maxDate                     Latest timestamp in the unfiltered data (for setting "max" on input fields)
         updateDateRange             Function to change the data range
 */
 
 import { useState } from "react";
-import { T_FetchedData, T_RainGaugeReading } from "./useRainGaugeData";
-import { sortInDateOrder } from "./sortRainGaugeData";
+import { T_FetchedData, T_SelectedDateRange, T_RainGaugeSubtotal } from "./useRainGaugeData";
+import { sortSubtotalsInDateOrder } from "./sortRainGaugeData";
 
-
-type T_SelectedDateRange = {
-    start : Date | null,
-    end : Date | null,
-}
 
 export type T_TimeRangeOfData = {
     start : string,
@@ -27,7 +22,7 @@ export type T_TimeRangeOfData = {
 export type T_UpdateDateRange = (dateRangeObj : T_SelectedDateRange | null) => void;
 
 export type T_AdjustableDateRangeOutput = {
-    data : T_RainGaugeReading[],
+    subtotals : T_RainGaugeSubtotal[],
     minDate : string,
     maxDate : string,
     updateDateRange : T_UpdateDateRange,
@@ -42,12 +37,75 @@ export function useAdjustableDateRange(fetchedData : T_FetchedData) : T_Adjustab
             setDateRange(null);
         }
         else if(isValidDateRange(newDateRange)){
+            if(needNewData(newDateRange)){
+                fetchedData.updateDataForNewTimeRange({
+                    start: newDateRange.start,
+                    end: newDateRange.end
+                });
+            }
+
             setDateRange({
                 start: newDateRange.start,
                 end: newDateRange.end
-            })
+            });
         }
     }
+
+
+    function needNewData(newDateRange : T_SelectedDateRange){
+        return exceedsExistingDateRange() || subtotalSizeHasChanged();
+
+        function exceedsExistingDateRange(){
+            // Note: "null" defaults to "all available data" and so can't be meaningfully exceeded
+            if(dateRange === null){
+                return false;
+            }
+
+            const startOutOfRange = 
+                dateRange.start !== null 
+                && (newDateRange.start === null || newDateRange.start < dateRange.start)
+            ;
+
+            const endOutOfRange = 
+                dateRange.end !== null 
+                && (newDateRange.end === null || newDateRange.end > dateRange.end)
+            ;
+            
+            return startOutOfRange || endOutOfRange;
+        }
+
+        function subtotalSizeHasChanged(){
+            const startDatetime = newDateRange.start === null
+                ? fetchedData.data.minDate
+                : newDateRange.start;
+            
+            const endDatetime = newDateRange.end === null
+                ? fetchedData.data.maxDate
+                : newDateRange.end;
+
+            const diffInMs = Math.abs(endDatetime - startDatetime);
+            const diffInHours = diffInMs / 1000 / 60 / 60;
+            const newSubtotalSizeInHours = calcSubtotalSize(diffInHours);
+            const currentSubtotalSizeInHours = fetchedData.data.subtotals[1].numReadings / fetchedData.data.recordsPerHour;
+
+            return newSubtotalSizeInHours !== currentSubtotalSizeInHours;
+        }
+
+        function calcSubtotalSize(numHoursToCover : number){
+            const sizesInHours = fetchedData.data.subtotalSizesInHours;
+            for(let i = 0; i < sizesInHours.length; i++){
+                const thisSize = sizesInHours[i];
+                const numSubtotals = numHoursToCover / thisSize;
+                if(numSubtotals <= fetchedData.data.maxRecordsPerRequest){
+                    return thisSize;
+                }
+            }
+            return sizesInHours[sizesInHours.length - 1];
+        }
+
+    }
+
+
 
     function isValidDateRange(variable : any){
         
@@ -71,16 +129,15 @@ export function useAdjustableDateRange(fetchedData : T_FetchedData) : T_Adjustab
         if(fetchedData.error || fetchedData.isLoading){
             return fallback ?? [];
         }
-        const filtered = filterDataToDateRange();
-        return sortInDateOrder(filtered);
+        const filtered = filterSubtotalsToDateRange();
+        return sortSubtotalsInDateOrder(filtered);
     }
 
-    function filterDataToDateRange(){
-        if(dateRange === null){
-            return fetchedData.data.data;
-        }
-        return fetchedData.data.data.filter((record : T_RainGaugeReading) => {
-            const timestampAsDate = new Date(record.timestamp);
+    function filterSubtotalsToDateRange(){
+        const subtotals = fetchedData.data.subtotals;
+
+        const filtered = subtotals.filter((record : T_RainGaugeSubtotal) => {
+            const timestampAsDate = new Date(record.lastTimestamp);
 
             const afterStart = 
                 dateRange === null 
@@ -94,25 +151,15 @@ export function useAdjustableDateRange(fetchedData : T_FetchedData) : T_Adjustab
 
             return afterStart && beforeEnd
         });
+
+        return filtered;
+
     }
 
-    // // Get the first and last timestamp in the data
-    const startAndEnd = function getStartAndEndOfAvailableData(){
-        if(fetchedData.isLoading || fetchedData.error || fetchedData.data.data.length === 0){
-            return { start: "", end: "" };
-        }
-        
-        const sorted = sortInDateOrder(fetchedData.data.data)
-        return {
-                start: sorted[0].timestamp,
-                end: sorted[fetchedData.data.data.length - 1].timestamp
-            }
-    }();
-
     return {
-        data: filterAndSortData([]),
-        minDate: startAndEnd.start,
-        maxDate: startAndEnd.end,
+        subtotals: filterAndSortData([]),
+        minDate: fetchedData.data === undefined ? "" : fetchedData.data.minDate,
+        maxDate: fetchedData.data === undefined ? "" : fetchedData.data.maxDate,
         updateDateRange,
     }
 }
