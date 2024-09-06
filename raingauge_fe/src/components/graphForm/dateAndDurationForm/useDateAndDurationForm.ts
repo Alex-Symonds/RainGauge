@@ -94,7 +94,7 @@ export function useDateAndDurationForm({
 
         const index = durationOptions.findIndex(option => option.value === selectedDuration);
         const durationData = durationOptions[index];
-        const startDate = convertStringToDate(`${startDateStr}T00:00:00`);
+        const startDate = convertStringToDate(`${startDateStr}T00:01:00`);
         const endDate = durationData.calcFn();
 
         if(checkDates(startDate, endDate)){
@@ -123,8 +123,10 @@ export function useDateAndDurationForm({
     }
 
     function checkDates(startDate : Date, endDate : Date){
-        // Note: this returns "true" when it's ok to update the date range (regardless) and false if not.
-        // (Some of the "issues" are just... things that might be a little unexpected, so it's helpful to explain)
+        /*
+            This check looks out for issues of varying degrees of severity.
+            It returns "true" when it's ok to update the date range and false if not.
+        */
 
         const minDateAsDate = new Date(minDate);
         const maxDateAsDate = new Date(maxDate);
@@ -179,16 +181,18 @@ export function useDateAndDurationForm({
     ];
 
     function addDays(numDaysToAdd : number){
-        // The start date is "day 1", so subtract it
-        const durationAsDateOffset = numDaysToAdd - 1;
-        let endDate = convertStringToDate(`${startDateStr}T23:59:00`);
+        const offsetToRemoveDoubleCount = -1;
+        const offsetToIncludeMidnight = 1;
+        const durationAsDateOffset = numDaysToAdd + offsetToRemoveDoubleCount + offsetToIncludeMidnight;
+
+        let endDate = convertStringToDate(`${startDateStr}T00:00:00`);
         endDate.setDate(endDate.getDate() + durationAsDateOffset);
         return endDate;
     }
 
     function calcCalMonth(numMonthsToAdd : number){
-        const startDate = convertStringToDate(`${startDateStr}T00:00:00`);
-        const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + numMonthsToAdd, startDate.getDate() - 1, 23, 59);
+        const startDate = convertStringToDate(`${startDateStr}T00:01:00`);
+        const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + numMonthsToAdd, startDate.getDate(), 0, 0);
         return endDate;
     }
 

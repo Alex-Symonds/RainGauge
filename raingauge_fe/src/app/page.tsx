@@ -9,7 +9,7 @@ import { useInteractiveData } from "@/components/graphForm/util/useInteractiveDa
 
 import { useRainGaugeData } from "@/util/useRainGaugeData";
 import { useAdjustableDateRange } from "@/util/useAdjustableDateRange";
-import { splitIntoCoords } from "@/util/splitIntoCoords";
+import { splitSubtotalIntoCoords } from "@/util/splitIntoCoords";
 import { getTimeRangeGraphTitle } from "@/util/getGraphTitle";
 
 
@@ -23,8 +23,8 @@ export default function Home() {
     maxDate: dataInDateRange.maxDate,
   });
 
-  const graphCoords = splitIntoCoords(dataInDateRange.data);
-  const graphTitle = getTimeRangeGraphTitle(dataInDateRange.data);
+  const graphCoords = splitSubtotalIntoCoords(dataInDateRange.subtotals);
+  const graphTitle = getTimeRangeGraphTitle(dataInDateRange?.subtotals[0]?.firstTimestamp, dataInDateRange?.subtotals[dataInDateRange.subtotals.length - 1]?.lastTimestamp);
 
   return (
       <main>
@@ -34,27 +34,21 @@ export default function Home() {
           />
 
           <div className="row mt-5"> 
-          { rainData.isLoading ?
-            <p>Loading...</p>
-            :
             <GraphWithForm 
               title = { graphTitle }
               xCoords = { graphCoords.xCoords }
               yCoords = { graphCoords.yCoords }
               formKit = { formKit }
             />
-          }
           </div>
 
-          {dataInDateRange.data.length !== 0 ?
           <div className="row mt-5">
             <StatsCards 
-              data = { dataInDateRange.data }
+              data = { dataInDateRange.subtotals }
+              numRecordsPerHour = { rainData.data === undefined ? 0 : rainData.data.recordsPerHour }
             />
           </div>
-          : null
-          }
-
+  
           <div className="row mt-5">
             <MapPanel
               data = { rainData }

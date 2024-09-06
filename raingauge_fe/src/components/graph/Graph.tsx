@@ -17,7 +17,7 @@ type T_GraphProps = {
 export function Graph({ xCoords, yCoords, title } : T_GraphProps){
     return <div id="tester" className={`container rounded ${styles.graphContainer}`}>
         <Plot
-            //@ts-ignore (TypeScript is fussing, but since this is a third-party thing and it works, TS can shush)
+            //@ts-ignore (TypeScript is fussing, but since this is a third-party thing and it's working, TS can shush)
             data={[
                     {
                         x: xCoords ?? [],
@@ -28,10 +28,9 @@ export function Graph({ xCoords, yCoords, title } : T_GraphProps){
                     },
 
             ]}
-            layout={ { title } } 
+            layout={ { title, margin: { l: 20, r: 20 }, } } 
             useResizeHandler={true}
             style={{width: "100%", height: "100%"}}
-            margin={{t: 0, b: 0, l: 0, r: 0}}
         />
     </div>
 }

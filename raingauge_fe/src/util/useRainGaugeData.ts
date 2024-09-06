@@ -3,12 +3,8 @@
 */
 
 import useSWR from "swr";
-import { sortInDateOrder } from "./sortRainGaugeData";
-
-export type T_RainGaugeReading = {
-    timestamp : string,
-    reading: string,
-}
+import { useState } from "react";
+import { formatDateForURL, } from "./dateStringHelpers";
 
 export type T_FetchedData = {
     data : any,
@@ -16,10 +12,32 @@ export type T_FetchedData = {
     isLoading : boolean, 
     lat : number, 
     long : number, 
+    updateDataForNewTimeRange : (dateRangeObj : T_SelectedDateRange) => void,
+}
+
+export type T_SelectedDateRange = {
+    start : Date | null,
+    end : Date | null,
+}
+
+export type T_RainGaugeSubtotal = {
+    firstTimestamp : string,
+    lastTimestamp : string,
+    total : string,
+    numReadings : string,
+    max : T_RainGaugeSubtotalMinMax,
+    min : T_RainGaugeSubtotalMinMax,
+}
+
+export type T_RainGaugeSubtotalMinMax = {
+    count : string,
+    timestamp : string,
+    reading: string,
 }
 
 export function useRainGaugeData(){
     const apiURL = "http://127.0.0.1:8000/api/";
+    const [queryStr, setQueryStr] = useState<string>("");
 
     // Hard-coded lat and long: if the project expanded to multiple rain gauges, this info would probably
     // come from the server, so this seems a good place to keep it in the meantime :)
@@ -38,7 +56,26 @@ export function useRainGaugeData(){
         data,
         error,
         isLoading
-    } = useSWR(apiURL, fetcher);
+    } = useSWR(`${apiURL}${ queryStr === "" ? "" : `?${queryStr}` }`, fetcher);
+
+
+    function updateDataForNewTimeRange({ start, end } : T_SelectedDateRange){
+        const startStr = start !== null
+            ? `start=${formatDateForURL(start)}`
+            : "";
+
+        const endStr = end !== null
+            ? `end=${formatDateForURL(end)}`
+            : "";
+            
+        const delim = startStr !== "" && endStr !== ""
+            ? "&"
+            : "";
+
+        const newUrlQueryStr = `${startStr}${delim}${endStr}`;
+        setQueryStr(newUrlQueryStr);
+    }
+
 
     return {
         data,
@@ -48,5 +85,6 @@ export function useRainGaugeData(){
         long,
         locationName,
         gaugeName,
+        updateDataForNewTimeRange,
     }
 }

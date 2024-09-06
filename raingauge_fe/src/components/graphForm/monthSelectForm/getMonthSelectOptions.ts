@@ -34,16 +34,24 @@ export function getMonthOptionData(startAndEnd : T_TimeRangeOfData) : T_SelectMo
 }
 
 function formatAsMonthOptionData(month : number, year : number){
-    const firstDayOfMonth = new Date(year, month, 1);
-    // To save relearning this if it doesn't come up again for a while:
-    // [Date] considers "0th of $MONTH" to be "the day before the 1st of $MONTH" aka "last day of ($MONTH - 1)",
-    const lastDayOfMonth = new Date(year, month + 1, 0);
+    /*
+        Each timestamp reflects when the reading was taken and therefore represents the rain that fell in the 
+        preceeding 15 minute period. This means all __:00 readings should be considered the last reading 
+        of the previous hour (and, by extention, the last of the week, day, month, year, etc.).
 
+        > startTimestamp uses a time of "00:01" to avoid the 00:00 last-reading that belongs to the previous month
+        > endTimestamp is set to the first day of the next month and uses "00:00" so as to capture its last-reading
+    */
+
+    const firstDayOfMonth = new Date(year, month, 1);
+    const firstDayNextMonth = new Date(year, month + 1, 1);
+    
     const newMonthData = {
         display: `${firstDayOfMonth.toLocaleString('default', { month: 'long' })} ${firstDayOfMonth.getFullYear()}`,
-        value: `${firstDayOfMonth.getFullYear()}-${formatTwoDigits(firstDayOfMonth.getMonth()+1)}`,
-        startTimestamp: `${firstDayOfMonth.getFullYear()}-${formatTwoDigits(firstDayOfMonth.getMonth() + 1)}-01T00:00`,
-        endTimestamp: `${lastDayOfMonth.getFullYear()}-${formatTwoDigits(lastDayOfMonth.getMonth() + 1)}-${lastDayOfMonth.getDate()}T23:59`
+        value: `${firstDayOfMonth.getFullYear()}-${formatTwoDigits(firstDayOfMonth.getMonth() + 1)}`,
+        startTimestamp: `${firstDayOfMonth.getFullYear()}-${formatTwoDigits(firstDayOfMonth.getMonth() + 1)}-01T00:01`,
+        endTimestamp: `${firstDayNextMonth.getFullYear()}-${formatTwoDigits(firstDayNextMonth.getMonth() + 1)}-01T00:00`
     }
+
     return newMonthData;
 }
