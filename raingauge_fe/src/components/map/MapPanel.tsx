@@ -14,16 +14,16 @@ export function MapPanel({ data } : any){
     ), [])
 
     return (
-        <div className={`col-12 pb-3 mb-4 ${styles.panel}`}>
+        <div className={`col-12 col-xl-4 pb-3 mt-5 mt-xl-0 mb-4 ${styles.panel}`}>
             <h2 className="mb-4">Rain Gauge Info</h2>
             <div className="row">
-                <div className="col-12 col-md-6">
+                <div className="col-6 col-xl-12">
                     <Map 
                         position = { [data.lat, data.long] }
                         zoom = { 13 }
                     />
                 </div>
-                <div className="col-12 col-md-6">
+                <div className="col-6 col-xl-12">
                     <dl>
                         <dt>Name</dt>
                         <dl>{ data.gaugeName }</dl>

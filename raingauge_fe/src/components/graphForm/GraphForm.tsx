@@ -34,7 +34,7 @@ export function GraphForm({
                 <AccordionItemWrapper
                     accordionID = { accordionID }
                     isOpenOnLoad = { true }
-                    title = { "Show One Month" }
+                    title = { "Pick One Month" }
                     sectionID = { collapseOneMonthID }
                 >
                     <OneMonthForm
@@ -47,7 +47,7 @@ export function GraphForm({
                 <AccordionItemWrapper
                     accordionID = { accordionID }
                     isOpenOnLoad = { false }
-                    title = { "Date & Duration" }
+                    title = { "Set Date & Duration" }
                     sectionID = { collapseDateAndDurationID }
                 >
                     <DateAndDurationForm

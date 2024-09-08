@@ -4,7 +4,7 @@
 
 import { formatDate } from "@/util/dateStringHelpers";
 import { T_RainGaugeSubtotal, T_RainGaugeSubtotalMinMax } from "@/util/useRainGaugeData";
-import { T_StatsCardProps } from "./StatsCard";
+import { T_StatsCardProps } from "../components/statsCards/StatsCard";
 
 export type T_StatsDataOutput = T_StatsCardProps[];
 
@@ -24,7 +24,13 @@ type T_StatsAccumulator = {
 
 
 export function createStatsData(filteredData : T_RainGaugeSubtotal[], numReadingsPerHour : number) : T_StatsDataOutput{
-    const FALLBACK_STATS = { 
+    const stats = calculateStats(filteredData);
+    return formatStats(stats, numReadingsPerHour);
+}
+
+
+function calculateStats(filteredData : T_RainGaugeSubtotal[]){
+    const FALLBACK = { 
         total: 0, 
         max: { 
             reading: 0, 
@@ -39,56 +45,66 @@ export function createStatsData(filteredData : T_RainGaugeSubtotal[], numReading
         numReadings: 0 
     };
 
-    const stats = filteredData.length === 0
-        ? FALLBACK_STATS
-        : calculateStats(filteredData);
+    return filteredData.length === 0
+        ? FALLBACK
+        : filteredData.reduce(
+            (acc : T_StatsAccumulator, curr : T_RainGaugeSubtotal) => {
+                const newMax = getNewMinMaxObject(acc.max, curr.max, parseFloat(curr.max.reading) > acc.max.reading);
+                const newMin = getNewMinMaxObject(acc.min, curr.min, parseFloat(curr.min.reading) < acc.min.reading);
 
-    return formatStats(stats, numReadingsPerHour);
+                return {
+                    total: acc.total + parseFloat(curr.total),
+                    max: newMax,
+                    min: newMin,
+                    numReadings: acc.numReadings + parseFloat(curr.numReadings),
+                }
+            }, 
+            { 
+                total: 0, 
+                numReadings: 0, 
+                min: { 
+                    reading: Infinity, 
+                    count: 0, 
+                    timestamp: null 
+                }, 
+                max: { 
+                    reading: -Infinity, 
+                    count: 0, 
+                    timestamp: null 
+                } 
+            }
+        );
 }
 
 
-function calculateStats(filteredData : T_RainGaugeSubtotal[]){
-    return filteredData.reduce((acc : T_StatsAccumulator, curr : T_RainGaugeSubtotal) => {
-        const newMax = getNewMinMaxObject(acc.max, curr.max, parseFloat(curr.max.reading) > acc.max.reading);
-        const newMin = getNewMinMaxObject(acc.min, curr.min, parseFloat(curr.min.reading) < acc.min.reading);
+function getNewMinMaxObject(accMinMax : T_RainGaugeSubtotalMinMaxProcessed, currMinMax : T_RainGaugeSubtotalMinMax, wantReplace : boolean){
+    let count, reading, timestamp;
 
-        return {
-            total: acc.total + parseFloat(curr.total),
-            max: newMax,
-            min: newMin,
-            numReadings: acc.numReadings + parseFloat(curr.numReadings),
-        }
-    }, { total: 0, numReadings: 0, min: { reading: Infinity, count: 0, timestamp: null }, max: { reading: -Infinity, count: 0, timestamp: null } });
-
-
-    function getNewMinMaxObject(accMinMax : T_RainGaugeSubtotalMinMaxProcessed, currMinMax : T_RainGaugeSubtotalMinMax, wantReplace : boolean){
-        let count, reading, timestamp;
-
-        if(wantReplace){
-            count = 1;
-            reading = parseFloat(currMinMax.reading);
-            timestamp = new Date(currMinMax.timestamp);
-        }
-        else if(accMinMax.reading === parseFloat(currMinMax.reading)){
-            count = accMinMax.count + parseFloat(currMinMax.count)
-            reading = accMinMax.reading;
-            timestamp = null;
-        }
-        else {
-            count = accMinMax.count;
-            reading = accMinMax.reading;
-            timestamp = accMinMax.timestamp
-        }
-
-        return { count, reading, timestamp }
+    if(wantReplace){
+        count = 1;
+        reading = parseFloat(currMinMax.reading);
+        timestamp = new Date(currMinMax.timestamp);
     }
+    else if(accMinMax.reading === parseFloat(currMinMax.reading)){
+        count = accMinMax.count + parseFloat(currMinMax.count)
+        reading = accMinMax.reading;
+        timestamp = null;
+    }
+    else {
+        count = accMinMax.count;
+        reading = accMinMax.reading;
+        timestamp = accMinMax.timestamp
+    }
+
+    return { count, reading, timestamp }
 }
 
 
 function formatStats(stats : T_StatsAccumulator, numReadingsPerHour : number){
     const READINGS_PER_DAY = numReadingsPerHour * 24;
-
-    const numDays = Math.round(stats.numReadings/READINGS_PER_DAY);
+    const numDays = READINGS_PER_DAY === 0 
+    ? 0
+    : Math.round(stats.numReadings/READINGS_PER_DAY);
 
     const totalObj = {
         title: "Total",
@@ -126,5 +142,5 @@ function formatWithMM(num : number){
 }
 
 function createMinMaxSubtitle(num : number){
-    return `Occurred ${num.toLocaleString()} times`
+    return `${num.toLocaleString()} separate readings`
 }

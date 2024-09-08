@@ -11,7 +11,9 @@ import { useRainGaugeData } from "@/util/useRainGaugeData";
 import { useAdjustableDateRange } from "@/util/useAdjustableDateRange";
 import { splitSubtotalIntoCoords } from "@/util/splitIntoCoords";
 import { getTimeRangeGraphTitle } from "@/util/getGraphTitle";
-
+import { createStatsData } from "@/util/createStatsData";
+import { StatsTable } from "@/components/statsTable/StatsTable";
+import { createWettestDriestTableStats } from "@/util/createTableStats";
 
 export default function Home() {
   const rainData = useRainGaugeData();
@@ -25,6 +27,10 @@ export default function Home() {
 
   const graphCoords = splitSubtotalIntoCoords(dataInDateRange.subtotals);
   const graphTitle = getTimeRangeGraphTitle(dataInDateRange?.subtotals[0]?.firstTimestamp, dataInDateRange?.subtotals[dataInDateRange.subtotals.length - 1]?.lastTimestamp);
+  
+  const recordsPerHour = rainData.data === undefined ? 0 : parseInt(rainData.data.recordsPerHour);
+  const statsData = createStatsData(dataInDateRange.subtotals, recordsPerHour);
+  const tableData = createWettestDriestTableStats(dataInDateRange.subtotals, recordsPerHour);
 
   return (
       <main>
@@ -44,15 +50,19 @@ export default function Home() {
 
           <div className="row mt-5">
             <StatsCards 
-              data = { dataInDateRange.subtotals }
-              numRecordsPerHour = { rainData.data === undefined ? 0 : rainData.data.recordsPerHour }
+              statsData = { statsData }
             />
           </div>
   
           <div className="row mt-5">
+
+            <StatsTable
+              tableData = { tableData }
+            />
             <MapPanel
               data = { rainData }
             />
+
           </div>
         </div>
       </main>

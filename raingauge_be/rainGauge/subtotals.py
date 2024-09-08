@@ -2,6 +2,9 @@
 ## the front and backend too closely, it's worth considering that presently the graph
 ## displays at a maximum width of 760px, so ~28k records = ~37 datapoints crammed into
 ## each pixel = proooobably overkill
+
+from django.db.models import Min, Max
+
 def get_subtotal_config():
     NUM_RECORDS_PER_HOUR = 4
     ASCENDING_SUPPORTED_SIZES_IN_HOURS = [
@@ -35,6 +38,7 @@ def get_subtotals(query_set):
                 'reading': Float,
                 'count': Integer,
                 'timestamp': Date,
+            },
         }
     """
 
@@ -45,16 +49,32 @@ def get_subtotals(query_set):
     subtotals = []
     working_subtotal = None
 
+    working_min_hour = None
+    working_max_hour = None
+    working_hour_subtotal = 0
+
     for record in sorted:
         if working_subtotal == None:
             working_subtotal = create_new_subtotal_from(record)
         else:
             working_subtotal = update_subtotal(working_subtotal, record)
 
+        if size_in_hours > 1:
+            newSubtotal, newMin, newMax = update_min_max_hour_data(record, working_hour_subtotal, working_min_hour, working_max_hour)
+            working_min_hour = newMin
+            working_max_hour = newMax
+            working_hour_subtotal = newSubtotal
+
         # If this reading is at the end of the subtotal block, store the now-finished working subtotal and reset
-        if (    size_in_hours >= 1    and is_timestamp_end_of_full_hour_block(record, size_in_hours)
+        if (    size_in_hours >= 1 and is_timestamp_end_of_full_hour_block(record, size_in_hours)
             or  size_in_hours == 1 / config['NUM_RECORDS_PER_HOUR']
             ) :
+                if size_in_hours > 1:
+                    working_subtotal['minHour'] = working_min_hour
+                    working_subtotal['maxHour'] = working_max_hour
+                    working_min_hour = None
+                    working_max_hour = None
+
                 subtotals.append(working_subtotal)
                 working_subtotal = None
 
@@ -90,7 +110,7 @@ def is_timestamp_end_of_full_hour_block(reading, numHours):
 
 
 def create_new_subtotal_from(record):
-    return {
+    default = {
         'firstTimestamp': record.timestamp,
         'lastTimestamp': record.timestamp,
         'total': record.reading,
@@ -107,10 +127,12 @@ def create_new_subtotal_from(record):
         },
     }
 
+    return default
+
 
 def update_subtotal(subtotal, record):
-    newMax = get_new_min_max_object(subtotal['max'], record, record.reading > subtotal['max']['reading'])
-    newMin = get_new_min_max_object(subtotal['min'], record, record.reading < subtotal['min']['reading'])
+    newMax = update_min_max_object(subtotal['max'], record.reading, record.timestamp, record.reading > subtotal['max']['reading'])
+    newMin = update_min_max_object(subtotal['min'], record.reading, record.timestamp, record.reading < subtotal['min']['reading'])
 
     return {
         'firstTimestamp': subtotal['firstTimestamp'],
@@ -122,7 +144,7 @@ def update_subtotal(subtotal, record):
     }
 
 
-def get_new_min_max_object(subtotalMinOrMaxObj, record, want_replace):
+def update_min_max_object(subtotalMinOrMaxObj, reading, timestamp, want_replace):
     # GOAL:
     # Min and Max should both behave in the following way:
 
@@ -138,12 +160,12 @@ def get_new_min_max_object(subtotalMinOrMaxObj, record, want_replace):
 
     if want_replace:
         count = 1
-        reading = record.reading
-        timestamp = record.timestamp
+        reading = reading
+        timestamp = timestamp
 
-    elif record.reading == subtotalMinOrMaxObj['reading']:
+    elif reading == subtotalMinOrMaxObj['reading']:
         count = subtotalMinOrMaxObj['count'] + 1
-        reading = record.reading
+        reading = reading
         timestamp = None
 
     else:
@@ -155,4 +177,71 @@ def get_new_min_max_object(subtotalMinOrMaxObj, record, want_replace):
         'count': count,
         'reading': reading,
         'timestamp': timestamp
+    }
+
+
+def create_new_min_max_object(timestamp, total):
+    return {
+        'count': 1,
+        'reading': total,
+        'timestamp': timestamp
+    } 
+
+
+def update_min_max_hour_data(record, subtotal_in, min_in, max_in):
+
+    updated_subtotal = 0 if record.timestamp.minute == 15 else subtotal_in + record.reading
+
+    if record.timestamp.minute == 00:
+        updated_min_hour = \
+            create_new_min_max_object(record.timestamp, updated_subtotal) \
+            if min_in == None \
+            else update_min_max_object(min_in, updated_subtotal, record.timestamp, updated_subtotal < min_in['reading'])
+        
+        updated_max_hour = \
+            create_new_min_max_object(record.timestamp, updated_subtotal) \
+            if max_in == None \
+            else update_min_max_object(max_in, updated_subtotal, record.timestamp, updated_subtotal > max_in['reading'])
+    else:
+        updated_min_hour = min_in
+        updated_max_hour = max_in
+
+    return updated_subtotal, updated_min_hour, updated_max_hour
+
+
+def get_empty_working_hour():
+    return {
+        'total': 0,
+        'last_timestamp': None,
+    }
+
+
+def find_min_group_and_total(hour_groups):
+    total = hour_groups.aggregate(Min('total'))['total__min']
+    filtered = hour_groups.filter(total=total)
+    return total, filtered
+
+
+def find_max_group_and_total(hour_groups):
+    total = hour_groups.aggregate(Max('total'))['total__max']
+    filtered = hour_groups.filter(total=total)
+
+    if len(filtered) == 0:
+        for hg in hour_groups:
+            if hg['total'] > 0:
+                print(f"{hg['hour']} {hg['total']}")
+
+    return total, filtered
+
+
+def format_group_data(total, group):
+    count = len(group)
+
+    if count <= 1:
+        print(f"count = { count }")
+
+    return {
+        'reading': total,
+        'count': count,
+        'description': None if count > 1 else group[0]['hour']
     }

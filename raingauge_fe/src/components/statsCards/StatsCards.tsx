@@ -1,17 +1,13 @@
 import { StatsCard, T_StatsCardProps } from "./StatsCard";
 
-import { T_RainGaugeSubtotal } from "@/util/useRainGaugeData";
-import { createStatsData } from "./createStatsData";
-
+import { T_StatsDataOutput } from "../../util/createStatsData";
 
 type T_StatsCardsProps = {
-    data : T_RainGaugeSubtotal[],
-    numRecordsPerHour : number,
+    statsData: T_StatsDataOutput
 }
 
-export function StatsCards({ data, numRecordsPerHour } : T_StatsCardsProps){
-    const statsData = createStatsData(data, numRecordsPerHour);
 
+export function StatsCards({ statsData } : T_StatsCardsProps){
     return (
         <>
     { statsData !== null ?
