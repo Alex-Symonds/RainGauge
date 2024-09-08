@@ -27,6 +27,8 @@ export type T_RainGaugeSubtotal = {
     numReadings : string,
     max : T_RainGaugeSubtotalMinMax,
     min : T_RainGaugeSubtotalMinMax,
+    minHour? : T_RainGaugeSubtotalMinMax,
+    maxHour? : T_RainGaugeSubtotalMinMax,
 }
 
 export type T_RainGaugeSubtotalMinMax = {

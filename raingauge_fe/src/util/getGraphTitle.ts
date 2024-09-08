@@ -11,7 +11,7 @@ export function getTimeRangeGraphTitle(startDateStr : string, endDateStr : strin
         const endStr = formatDate(endDateStr);
     
         // Plotly has no support for title word wrapping and requires users to pass in their own "<br>" tags
-        return `Data from ${startStr}<br>to ${endStr}`;
+        return `Readings from ${startStr}<br>to ${endStr}`;
     }
-    return "Data error";
+    return "...";
 }

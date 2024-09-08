@@ -52,11 +52,13 @@ export function useAdjustableDateRange(fetchedData : T_FetchedData) : T_Adjustab
     }
 
 
+    // Check if this date range adjustment requires fresh data.
     function needNewData(newDateRange : T_SelectedDateRange){
         return exceedsExistingDateRange() || subtotalSizeHasChanged();
 
         function exceedsExistingDateRange(){
-            // Note: "null" defaults to "all available data" and so can't be meaningfully exceeded
+            // "null" defaults to "all available data" and so it can't be exceeded 
+            // (well, it /could/ but it wouldn't make any difference to the data)
             if(dateRange === null){
                 return false;
             }
@@ -74,6 +76,7 @@ export function useAdjustableDateRange(fetchedData : T_FetchedData) : T_Adjustab
             return startOutOfRange || endOutOfRange;
         }
 
+
         function subtotalSizeHasChanged(){
             const startDatetime = newDateRange.start === null
                 ? fetchedData.data.minDate
@@ -86,11 +89,25 @@ export function useAdjustableDateRange(fetchedData : T_FetchedData) : T_Adjustab
             const diffInMs = Math.abs(endDatetime - startDatetime);
             const diffInHours = diffInMs / 1000 / 60 / 60;
             const newSubtotalSizeInHours = calcSubtotalSize(diffInHours);
-            const currentSubtotalSizeInHours = fetchedData.data.subtotals[1].numReadings / fetchedData.data.recordsPerHour;
+
+            /* 
+                Next we need to know the size-in-hours of the current subtotals. 
+                The number of records is stored in each subtotal and the backend told us how many readings
+                there are per hour, so we can work it out from those.
+                But there's a (very minor) gotcha to consider first: it's possible for the first and last 
+                subtotals to be incomplete, if the available data overlapped the subtotal time ranges.
+                Therefore, if it exists, we will get the number of readings from subtotals[1], which is 
+                always full.
+            */
+            const index = fetchedData.data.subtotals.length > 1
+                ? 1
+                : 0;
+            const currentSubtotalSizeInHours = fetchedData.data.subtotals[index].numReadings / fetchedData.data.recordsPerHour;
 
             return newSubtotalSizeInHours !== currentSubtotalSizeInHours;
         }
 
+        
         function calcSubtotalSize(numHoursToCover : number){
             const sizesInHours = fetchedData.data.subtotalSizesInHours;
             for(let i = 0; i < sizesInHours.length; i++){
@@ -104,7 +121,6 @@ export function useAdjustableDateRange(fetchedData : T_FetchedData) : T_Adjustab
         }
 
     }
-
 
 
     function isValidDateRange(variable : any){
