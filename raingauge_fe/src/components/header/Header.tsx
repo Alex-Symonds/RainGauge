@@ -1,4 +1,3 @@
-
 import styles from './Header.module.scss';
 
 export function PageHeader({ locationName } : { locationName : string }){

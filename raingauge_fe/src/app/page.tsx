@@ -4,8 +4,8 @@ import { PageHeader } from "@/components/header/Header";
 import { MapPanel } from "@/components/map/MapPanel";
 import { StatsCards } from "@/components/statsCards/StatsCards";
 
-import { GraphWithForm } from "@/components/GraphWithForm";
-import { useInteractiveData } from "@/components/graphForm/util/useInteractiveData";
+import { GraphWithForm } from "@/components/graphWithForm/GraphWithForm";
+import { useInteractiveData } from "@/components/graphWithForm/graphForm/util/useInteractiveData";
 
 import { useRainGaugeData } from "@/util/useRainGaugeData";
 import { useAdjustableDateRange } from "@/util/useAdjustableDateRange";
