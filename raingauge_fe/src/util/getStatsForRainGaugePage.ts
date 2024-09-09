@@ -1,9 +1,9 @@
 /*
-    Performs calculations and formats the data for use in the "stats cards"
+    Runs functions to generate stats based on the rain gauge data, then packages it up
+    for the components
 */
 
-import { formatDate } from "@/util/dateStringHelpers";
-import { T_RainGaugeSubtotal, T_RainGaugeSubtotalMinMax } from "@/util/useRainGaugeData";
+import { T_RainGaugeSubtotal } from "@/util/useRainGaugeData";
 import { T_StatsCardProps } from "../components/statsCards/StatsCard";
 import { calcWettestDriestGroupStats, T_CalcWettestDriestGroupStatsOutput, T_WettestDriestResult } from "./calcWettestAndDriest";
 
@@ -16,8 +16,6 @@ type T_StatsAccumulator = {
     total : number,
     numReadings : number,
 }
-
-
 
 export function getStatsForRainGaugePage(filteredData : T_RainGaugeSubtotal[], numReadingsPerHour : number) : T_StatsDataOutput{
     const minAndMaxes : T_CalcWettestDriestGroupStatsOutput = calcWettestDriestGroupStats(filteredData, numReadingsPerHour);

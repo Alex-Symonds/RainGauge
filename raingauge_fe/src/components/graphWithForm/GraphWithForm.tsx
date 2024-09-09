@@ -5,7 +5,7 @@
 import { Graph } from "./graph/Graph";
 import { GraphForm } from "./graphForm/GraphForm";
 import { T_UseInteractiveDataOutput } from "./graphForm/util/useInteractiveData";
-import { Loading } from "./loading/Loading";
+import { Loading } from "../loading/Loading";
 
 type T_GraphWithFormProps = {
     title : string,
