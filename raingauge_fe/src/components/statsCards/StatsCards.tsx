@@ -1,11 +1,8 @@
 import { StatsCard, T_StatsCardProps } from "./StatsCard";
 
-import { T_StatsDataOutput } from "../../util/createStatsData";
-
 type T_StatsCardsProps = {
-    statsData: T_StatsDataOutput
+    statsData: T_StatsCardProps[]
 }
-
 
 export function StatsCards({ statsData } : T_StatsCardsProps){
     return (

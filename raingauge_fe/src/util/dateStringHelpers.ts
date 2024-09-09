@@ -29,6 +29,13 @@ export function formatDate(input : Date | string){
     }`;  
 }
 
+export function formatDateWithShortMonth(input : Date | string){
+    const date = typeof input == 'string'
+    ? convertStringToDate(input)
+    : input;
+    return `${date.getDate()} ${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
+}
+
 export function formatDateForURL(input : Date | string){
     const date = typeof input == 'string'
         ? convertStringToDate(input)
