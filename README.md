@@ -11,11 +11,9 @@ A long-weekend project to display rain gauge information (for one particular rai
 
 ### If I had more time
 * DRY out the types
-* Better use of "loading" elements: when the data/form is loading, and while the graph is loading
 * Add a "Custom Date Range" for people who want to specify their own range, but only want full days
 * Add automated tests
 * Add cute little icons to the headings
-* More stats: wettest and driest hour, day, week, month in the range (depending on the size of the range)
 * Support dark mode
 
 
