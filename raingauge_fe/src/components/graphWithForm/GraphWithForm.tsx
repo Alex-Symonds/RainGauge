@@ -16,7 +16,7 @@ type T_GraphWithFormProps = {
 
 export function GraphWithForm({ title, xCoords, yCoords, formKit } : T_GraphWithFormProps){
     return (
-        <div className="row mt-3">
+        <div className="row mt-3 align-items-start">
             <div className="col-12 col-md-5 col-lg-4 col-xl-3 order-2 order-md-1">
                 <GraphForm
                     customFormKit = { formKit.customDateRange }

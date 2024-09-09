@@ -38,15 +38,16 @@ export function useDateAndDurationForm({
     const [selectedDuration, setSelectedDuration] = useState<string>("toEnd");
     const [formError, setFormError] = useState<string | null>(null);
     const [formWarning, setFormWarning] = useState<string | null>(null);
+    const [lockUpdate, setLockUpdate] = useState<boolean>(false);
 
+    // useEffect to auto-update the date range when the user picks a date or changes the duration
     useEffect(() => {
-        if(startDateStr === "" && minDate !== ""){
-            setStartDateStr(minDate.slice(0, -9));
+        if(lockUpdate){
+            setLockUpdate(false);
         }
-    }, [minDate]);
-
-    useEffect(() => {
-        updateGraphData();
+        else{
+            updateGraphData();
+        }
     }, [startDateStr, selectedDuration])
 
     const CRITICAL_ERROR_MESSAGE = "Date and Duration has stopped working. Please use another method of selecting a date range. Sorry for the inconvenience.";
@@ -71,7 +72,8 @@ export function useDateAndDurationForm({
     }
 
     function onReset(){
-        setStartDateStr(minDate.slice(0, -9));
+        setLockUpdate(true);
+        setStartDateStr("");
         setSelectedDuration("toEnd");
         resetErrorAndWarning();
     }
