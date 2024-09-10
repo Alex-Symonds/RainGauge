@@ -15,7 +15,7 @@
         || Update functions
         || Misc helpers
 */
-import { formatDateWithShortMonth, formatTwoDigits } from "./dateStringHelpers";
+import { formatDateWithShortMonth, formatDateWithShortMonthAndTime, formatTwoDigits } from "./dateStringHelpers";
 import { T_BackendMinMaxKeys, T_RainGaugeSubtotal, T_RainGaugeSubtotalMinMax } from "./useRainGaugeData";
 
 
@@ -87,7 +87,7 @@ function getConfigForIndividualReadings(durationInHours : number, numReadingsPer
         minReadingsPerUnit: 1,
         convertHoursToUnits: (duration : number) => duration * numReadingsPerHour,
         updateResult: (subtotal : T_RainGaugeSubtotal, result : T_WettestDriestResult, working : T_WorkingGroupSubtotal, minReadingsPerUnit : number) => 
-            updateResultFromExistingMinMax({ subtotal, result, descFn: formatDateWithShortMonth, keys: { minKey: 'min', maxKey: 'max' } }),
+            updateResultFromExistingMinMax({ subtotal, result, descFn: formatDateWithShortMonthAndTime, keys: { minKey: 'min', maxKey: 'max' } }),
         durationInHours
     };
 }
@@ -168,7 +168,7 @@ function getHourString(endDate : Date){
     }
 
     const dayStr = getDayString(displayStart);
-    return `${formatTwoDigits(displayStart.getHours())}:01 - ${formatTwoDigits(displayEnd.getHours())}:00, ${dayStr}`;
+    return `${formatTwoDigits(displayStart.getHours())}:15 - ${formatTwoDigits(displayEnd.getHours())}:00, ${dayStr}`;
 
 }
     
