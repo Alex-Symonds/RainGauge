@@ -4,8 +4,9 @@
 */
 
 import { T_RainGaugeSubtotal } from "@/util/useRainGaugeData";
-import { T_StatsCardProps } from "../components/statsCards/StatsCard";
-import { calcWettestDriestGroupStats, T_CalcWettestDriestGroupStatsOutput, T_WettestDriestResult } from "./calcWettestAndDriest";
+import { T_StatsCardProps } from "../../components/statsCards/StatsCard";
+import { T_WettestDriestResult } from "./createMinMaxFinder";
+import { getMinMaxDays, getMinMaxHours, getMinMaxMonths, getMinMaxReadings } from "./configMinMaxFinder";
 
 export type T_StatsDataOutput = {
     statsCards: T_StatsCardProps[],
@@ -18,17 +19,16 @@ type T_StatsAccumulator = {
 }
 
 export function getStatsForRainGaugePage(filteredData : T_RainGaugeSubtotal[], numReadingsPerHour : number) : T_StatsDataOutput{
-    const minAndMaxes : T_CalcWettestDriestGroupStatsOutput = calcWettestDriestGroupStats(filteredData, numReadingsPerHour);
-    
-    let tableData : T_WettestDriestResult[] = [];
-    if('hour' in minAndMaxes && 'day' in minAndMaxes && 'month' in minAndMaxes){
-        tableData = [minAndMaxes.hour, minAndMaxes.day, minAndMaxes.month]
-    }
+    const tableData = [
+        getMinMaxHours(filteredData, numReadingsPerHour),
+        getMinMaxDays(filteredData, numReadingsPerHour),
+        getMinMaxMonths(filteredData, numReadingsPerHour),
+    ]
 
     const stats = calculateReadingsTotalAndCount(filteredData);
-    const readingMinMax = 'reading' in minAndMaxes ? minAndMaxes.reading : getDummyWDR();
+    const readingMinMax = getMinMaxReadings(filteredData, numReadingsPerHour);
     const cardsData = formatStats(stats, numReadingsPerHour, readingMinMax);
-
+    
     return {
         statsCards: cardsData,
         wettestDriestTable: tableData,
@@ -94,20 +94,4 @@ function formatStats(stats : T_StatsAccumulator, numReadingsPerHour : number, re
 
 function formatWithMM(num : number){
     return `${Math.round(num * 100) / 100} mm`;
-}
-
-function getDummyWDR(){
-    return {
-        heading: "",
-        wettest : {
-            count: 0,
-            total: 0,
-            description: "-",
-        },
-        driest : {
-            count: 0,
-            total: 0,
-            description: "-",
-        },
-    }
 }

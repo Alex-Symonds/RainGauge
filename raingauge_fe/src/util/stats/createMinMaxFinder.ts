@@ -1,25 +1,15 @@
 /*
-    Loops through the data in the date range to find the wettest and driest in the following time units:
-        * 15 minutes (aka individual readings)
-        * Hour
-        * Day
-        * Month
+    Loops through the data in the date range to find the wettest and driest
 
     Contents:
-        || Types
         || Main function
-        || Configurations for min/max finders
-        || Group string generators
         || Create min/max finder
-        || Create results object
         || Update functions
         || Misc helpers
 */
-import { formatDateWithShortMonth, formatDateWithShortMonthAndTime, formatTwoDigits } from "./dateStringHelpers";
-import { T_BackendMinMaxKeys, T_RainGaugeSubtotal, T_RainGaugeSubtotalMinMax } from "./useRainGaugeData";
+import { T_BackendMinMaxKeys, T_RainGaugeSubtotal, T_RainGaugeSubtotalMinMax } from "../useRainGaugeData";
 
 
-// || Types
 export type T_CalcWettestDriestGroupStatsOutput = {
     [key : string]: T_WettestDriestResult,
 }
@@ -42,170 +32,19 @@ type T_WorkingGroupSubtotal = {
     numReadings: number,
 }
 
-// || Main function
-// Obtain an array of information for use in generating a row in a "wettest and driest" table
-export function calcWettestDriestGroupStats(filteredSortedSubtotals : T_RainGaugeSubtotal[], numReadingsPerHour : number){
-    if(filteredSortedSubtotals === undefined || filteredSortedSubtotals === null || filteredSortedSubtotals.length === 0){
-        return {};
-    }
-
-    // The duration of the date range will affect whether some of this data is meaningful
-    // ("wettest month" is interesting over a year of data, not so much for a week)
-    const durationInHours = getDurationInHoursFromSubtotalData(filteredSortedSubtotals);
-
-    // Create an array of configured "hydroMinMaxFinder"s for the relevant time units
-    const minMaxFinders = [
-        createHydroMinMaxFinder(getConfigForIndividualReadings(durationInHours, numReadingsPerHour)),
-        createHydroMinMaxFinder(getConfigForHour(durationInHours, numReadingsPerHour)),
-        createHydroMinMaxFinder(getConfigForDay(durationInHours, numReadingsPerHour)),
-        createHydroMinMaxFinder(getConfigForMonth(durationInHours, numReadingsPerHour)),
-    ]
-
-    // Loop through the subtotals once, updating each finder accordingly
-    for(let i = 0; i < filteredSortedSubtotals.length; i++){
-        const subtotal = filteredSortedSubtotals[i];
-        minMaxFinders.forEach(mmFinder => mmFinder.update(subtotal));
-    }
-    minMaxFinders.forEach(mmFinder => mmFinder.finalise());
-
-    // Return the final results in the form of an object
-    return minMaxFinders.reduce((acc, mmFinder) => {
-        return {
-            ...acc,
-            [mmFinder.key]: mmFinder.getResult()
-        }
-    }, {});
-}
-
-
-// || Configurations for min/max finders
-function getConfigForIndividualReadings(durationInHours : number, numReadingsPerHour : number){
-    return {
-        heading: "Reading",
-        unitsForDescription: "reading",
-        keyForOutput: "reading",
-        minReadingsPerUnit: 1,
-        convertHoursToUnits: (duration : number) => duration * numReadingsPerHour,
-        updateResult: (subtotal : T_RainGaugeSubtotal, result : T_WettestDriestResult, working : T_WorkingGroupSubtotal, minReadingsPerUnit : number) => 
-            updateResultFromExistingMinMax({ subtotal, result, descFn: formatDateWithShortMonthAndTime, keys: { minKey: 'min', maxKey: 'max' } }),
-        durationInHours
-    };
-}
-
-function getConfigForHour(durationInHours : number, numReadingsPerHour : number){
-    return {
-        heading: "Hour",
-        unitsForDescription: "hour",
-        keyForOutput: "hour",
-        minReadingsPerUnit: numReadingsPerHour,
-        convertHoursToUnits: (duration : number) => duration,
-        updateResult: (subtotal : T_RainGaugeSubtotal, result : T_WettestDriestResult, working : T_WorkingGroupSubtotal, minReadingsPerUnit : number) => 
-            updateResultFromExistingOrWorking({working, subtotal, result, minReadingsPerUnit, descFn: getHourString, keys: { minKey: 'minHour', maxKey: 'maxHour' } }),
-        durationInHours
-    }
-}
-
-
-function getConfigForDay(durationInHours : number, numReadingsPerHour : number){
-    return {
-        heading: "Day", 
-        unitsForDescription: "day",
-        keyForOutput: "day",
-        minReadingsPerUnit: numReadingsPerHour * 24,
-        convertHoursToUnits: (duration : number) => duration / 24,
-        updateResult: (subtotal : T_RainGaugeSubtotal, result : T_WettestDriestResult, working : T_WorkingGroupSubtotal, minReadingsPerUnit : number) =>
-            updateResultFromWorking({working, subtotal, result, groupStr: getDayString(new Date(subtotal.firstTimestamp)), minReadingsPerUnit}),
-        durationInHours
-    }
-}
-
-function getConfigForMonth(durationInHours : number, numReadingsPerHour : number){
-    // Minimum month duration is a bit awkward due to the varying durations.
-    // The minimum duration is only used to disqualify "incomplete" months, so my thinking is:
-    // if 28 days is good enough to count as a complete month for February, it's good 
-    // enough to count as a complete month for the rest of the year too
-    const COMPLETE_MONTH_IN_DAYS = 28;
-    return {
-        heading: "Month",
-        unitsForDescription: "month",
-        keyForOutput: "month",
-        minReadingsPerUnit: numReadingsPerHour * 24 * COMPLETE_MONTH_IN_DAYS,
-        convertHoursToUnits: (duration : number) => duration / 24 / COMPLETE_MONTH_IN_DAYS,
-        updateResult: (subtotal : T_RainGaugeSubtotal, result : T_WettestDriestResult, working : T_WorkingGroupSubtotal, minReadingsPerUnit : number) =>
-            updateResultFromWorking({working, subtotal, result, groupStr: getMonthString(new Date(subtotal.firstTimestamp)), minReadingsPerUnit}),
-        durationInHours
-    }
-
-}
-
-
-/* 
-    || Group string generators
-    These are doing double duty.
-    1) They're displayed on the page (when there's only one "winning" time unit)
-    2) Since, by definition, they can be derived from timestamps and there's a different one for each time unit group,
-       I'm also using them as the group identifier for "working" updates. If the current timestamp would generate a
-       different description, that implies it's part of a different group, so the previous group is finished.
-*/
-function getHourString(endDate : Date){
-    /*
-        Note/example: readings at 06:15, 06:30, 06:45 and 07:00 should be grouped together to 
-        form an hour, since the 07:00 reading covers rain that fell in the preceeding 15 mins. 
-    */
-
-    // Use Date object so the built in stuff can handle days, months and years flipping over
-    let displayStart = new Date(endDate.getTime());
-    let displayEnd = new Date(endDate.getTime());
-
-    // Handle hours ticking over
-    if(endDate.getMinutes() === 0){
-        // This could be the "01 MONTH YEAR 00:00" reading, which
-        // needs to be counted in the last hour of the last day of the previous month, which could also tick back the year
-        displayStart.setMinutes(-1);
-    } else {
-        // It's a :15, :30 or :45 reading, so the end of the hour range needs to show the next hour
-        displayEnd.setHours(endDate.getHours() + 1);
-    }
-
-    const dayStr = getDayString(displayStart);
-    return `${formatTwoDigits(displayStart.getHours())}:15 - ${formatTwoDigits(displayEnd.getHours())}:00, ${dayStr}`;
-
-}
-    
-function getDayString(date : Date){
-    if(date.getMinutes() === 0 && date.getHours() === 0){
-        // This could be the "01 MONTH YEAR 00:00" reading, which
-        // needs to be counted in the last day of the previous month, which could also tick back the year
-        date.setMinutes(-1);
-    }
-    return `${date.getDate()} ${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
-}
-
-
-function getMonthString(date : Date){
-    let dayToUse = new Date(date.getFullYear(), date.getMonth(), 1);
-    if(date.getHours() === 0 && date.getMinutes() === 0){
-        // This could be the "01 MONTH YEAR 00:00" reading, which
-        // needs to be counted in the previous month, which could also tick back the year
-        dayToUse.setMinutes(-1);
-    }
-    return `${dayToUse.toLocaleString('default', { month: 'long' })} ${ dayToUse.getFullYear() }`
-}
-
 
 // || Create min/max finder
-// There was a lot of code being repeated for each display time period, so I refactored it into this one reusable function
 type T_CreateHydroMinMaxFinderProps = {
     convertHoursToUnits : (duration : number) => number, 
-    durationInHours : number,
+    descFn : (date : Date) => string,
     heading : string, 
-    keyForOutput : string,
+    keys?: T_MinMaxKeys,
     minReadingsPerUnit : number,
+    subtotals : T_RainGaugeSubtotal[],
     unitsForDescription : string, 
-    updateResult: (subtotal : T_RainGaugeSubtotal, result : T_WettestDriestResult, working : T_WorkingGroupSubtotal, minReadingsPerUnit : number) => void | boolean, 
 }
-function createHydroMinMaxFinder({
-    convertHoursToUnits, durationInHours, heading, keyForOutput, minReadingsPerUnit, unitsForDescription, updateResult
+export function createHydroMinMaxFinder({
+    convertHoursToUnits, descFn, heading, keys, minReadingsPerUnit, subtotals, unitsForDescription,
     } : T_CreateHydroMinMaxFinderProps){
 
     /* 
@@ -218,6 +57,7 @@ function createHydroMinMaxFinder({
         custom time range with incomplete units at the start and end.
     */
     const MIN_UNITS_FOR_COMPARISON = 3;
+    const durationInHours = getDurationInHoursFromSubtotalData(subtotals);
     const isApplicable = convertHoursToUnits(durationInHours) >= MIN_UNITS_FOR_COMPARISON;
     // -------------------------------------------------------------------------------------------
     
@@ -226,16 +66,30 @@ function createHydroMinMaxFinder({
         ? { description: "", total: 0, numReadings: 0, }
         : null;
 
+    // Here's where this does the thing
+    subtotals.forEach((subtotal : T_RainGaugeSubtotal) => {
+        update(subtotal);
+    })
+    finalise();
+    return getResult();
 
+    // Below are the helper functions to make that work
     function update(subtotal : T_RainGaugeSubtotal){
         if(isApplicable && workingGroupSubtotal !== null){
-            updateResult(subtotal, result, workingGroupSubtotal, minReadingsPerUnit);
+            if(keys === undefined || !updateResultFromExistingMinMax({ subtotal, keys, result, descFn, })){
+                updateResultFromWorking({
+                    working: workingGroupSubtotal, 
+                    subtotal, 
+                    result, 
+                    groupStr: descFn(new Date(subtotal.firstTimestamp)), 
+                    minReadingsPerUnit}
+                );
+            }
         }
     }
 
     function finalise(){
         if(isApplicable && workingGroupSubtotal !== null){
-
             /*
                 Complete groups are considered for min/max at the start of the /next/ loop, so "working"
                 could easily contain a complete group at this stage. Also, due to the variable duration
@@ -258,13 +112,6 @@ function createHydroMinMaxFinder({
 
     function getResult(){
         return result;
-    }
-
-    return {
-        key: keyForOutput,
-        update, 
-        finalise,
-        getResult,
     }
 }
 
@@ -362,23 +209,6 @@ type T_MinMaxKeys = {
     minKey : T_BackendMinMaxKeys,
     maxKey : T_BackendMinMaxKeys,
 }
-function updateResultFromExistingOrWorking({ 
-    working, subtotal, result, minReadingsPerUnit, descFn, keys 
-    } : T_UpdateResultFromExistingMinMaxProps 
-        & Pick<T_UpdateResultFromWorkingProps, "minReadingsPerUnit" | "result" | "subtotal" | "working"   >
-    ){
-
-    if(!updateResultFromExistingMinMax({ subtotal, keys, result, descFn, })){
-        updateResultFromWorking({
-            working, 
-            subtotal, 
-            result, 
-            groupStr: descFn(new Date(subtotal.lastTimestamp)), 
-            minReadingsPerUnit}
-        );
-    }
-}
-
 
 // Update helpers
 function updateWettestAndDriestFromWorking(working : T_WorkingGroupSubtotal, result : T_WettestDriestResult, minReadingsPerUnit : number){

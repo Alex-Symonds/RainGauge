@@ -30,7 +30,7 @@ export type T_RainGaugeSubtotal = {
     minHour? : T_RainGaugeSubtotalMinMax,
     maxHour? : T_RainGaugeSubtotalMinMax,
 }
-
+export type T_BackendTimestampKeys = "firstTimestamp" | "lastTimestamp";
 export type T_BackendMinMaxKeys = "min" | "max" | "minHour" | "maxHour";
 
 export type T_RainGaugeSubtotalMinMax = {
