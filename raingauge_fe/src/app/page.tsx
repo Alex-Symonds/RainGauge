@@ -11,7 +11,7 @@ import { useRainGaugeData } from "@/util/useRainGaugeData";
 import { useAdjustableDateRange } from "@/util/useAdjustableDateRange";
 import { splitSubtotalIntoCoords } from "@/util/splitIntoCoords";
 import { getTimeRangeGraphTitle } from "@/util/getGraphTitle";
-import { getStatsForRainGaugePage } from "@/util/getStatsForRainGaugePage";
+import { getStatsForRainGaugePage } from "@/util/stats/getStatsForRainGaugePage";
 import { StatsTable } from "@/components/statsTable/StatsTable";
 
 export default function Home() {
